@@ -22,6 +22,15 @@ body {
   padding: 1rem;
 }
 
+.card-form .form-group, .card-form .form-group label {
+  margin-bottom: .375rem;
+}
+
+.card-form .form-group label {
+  font-size: .875rem;
+  line-height: 1;
+}
+
 .card-maps {
   position: absolute;
   top: 0;
@@ -66,7 +75,7 @@ body {
 }
 
 .modal-page .modal-dialog .modal-content .modal-header {
-  background-color: #3897fd;
+  background-color: #00A0C0;
   color: #fff;
   padding: .65rem 1rem;
   border: 0;
