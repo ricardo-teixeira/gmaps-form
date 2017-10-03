@@ -11,10 +11,9 @@
 
   var defaultFormFields = {
     street: '',
-    street_number: '',
-    country: '',
-    state: '',
-    city: '',
+    country: 'BR',
+    state: 'SP',
+    city: 'Campinas',
     neighborhood: '',
     cep: '',
     lat: '',
@@ -23,18 +22,20 @@
 
   var formFieldsMap = {
     route: ['long_name', 'street'],
-    street_number: ['long_name', 'street_number'],
     country: ['short_name', 'country'],
     administrative_area_level_2: ['long_name', 'city'],
-    administrative_area_level_1: ['long_name', 'state'],
+    administrative_area_level_1: ['short_name', 'state'],
     political: ['long_name', 'neighborhood'],
     postal_code: ['long_name', 'cep']
   }
 
   /****************************/
-  getCountries()
-  getStates()
-  getCities()
+  
+  $.when(getCountries(), getStates(), getCities()).then(function () {
+    setTimeout(function () {
+      updateForm(defaultFormFields);
+    }, 100)
+  })
 
   function getCountries () {
     $.ajax({
@@ -59,7 +60,7 @@
       var $statesSelect = $form.querySelector('[name="state"]')
       var $stateList = '<option value="">Selecione</option>';
       response.forEach(function (state) {
-        return $stateList += '<option value="' + state.name + '">' + state.name + '</option>';
+        return $stateList += '<option value="' + state.code + '">' + state.name + '</option>';
       })
 
       $statesSelect.innerHTML = $stateList;
@@ -102,9 +103,10 @@
     }, function (responses) {
       // resetMapPosition(pos);
       if (responses && responses.length > 0) {
-        console.log('responses[0]', responses[0])
         var address = mapApiToFormFields(responses[0]);
-        updateForm(address)
+        address.lat = pos.lat;
+        address.lng = pos.lng;
+        updateForm(address);
       }
     });
   }
@@ -114,7 +116,6 @@
       lat: evt.latLng.lat(),
       lng: evt.latLng.lng()
     }
-
     geocodePosition(latLng);
   }
 
@@ -141,6 +142,42 @@
     cleanErrors();
     // TODO: Validate form
     console.warn('TODO: Validate form')
+
+    var formFields = {};
+    Object.keys(defaultFormFields).forEach(function (key) {
+      var field = $form.elements[key];
+      if (field) {
+        formFields[key] = $form.elements[key].value;
+      }
+    })
+
+    var latLng = {
+      lat: parseFloat(formFields.lat),
+      lng: parseFloat(formFields.lng)
+    };
+
+    geocoder.geocode({ 'location': latLng }, function (results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        var address = mapApiToFormFields(results[0]);
+
+        if (address.street != '' && address.street != formFields.street) {
+          $form.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Logradouro incorreto</small>')
+        }
+
+        if (address.neighborhood != '' && address.neighborhood != formFields.neighborhood) {
+          $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
+        }
+
+        if (address.cep != '' && address.cep != formFields.cep) {
+          $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
+        }
+      } else {
+        console.error('Nenhum resultado encontrado')
+        // $nameField.classList.add('is-invalid');
+        // $nameField.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Endereço não encontrado</small>')
+      }
+    });
+
     var isValid = true;
     return isValid;
   }
@@ -156,28 +193,15 @@
 
       var formFields = {};
       Object.keys(defaultFormFields).forEach(function (key) {
-        formFields[key] = $form.elements[key].value;
+        var field = $form.elements[key];
+        if (field) {
+          formFields[key] = $form.elements[key].value;
+        }
       })
   
       console.log('formFields', formFields)
       return
-
-      // geocoder.geocode({ 'address': addressString }, function (results, status) {
-      //   if (status == google.maps.GeocoderStatus.OK) {
-      //     map.setCenter(results[0].geometry.location);
-      //     marker.setPosition(results[0].geometry.location);
-      //     var address = mapApiToFormFields(results[0]);
-      //     updateForm(address);
-      //   } else {
-      //     $nameField.classList.add('is-invalid');
-      //     $nameField.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Endereço não encontrado</small>')
-      //   }
-      // });
-      // } else {
-      //   $nameField.classList.add('is-invalid');
-      // }
     }
-
   }
 
   function handleAutocomplete () {
@@ -187,6 +211,24 @@
       updateForm(address)
       geocodePosition({ lat: address.lat, lng: address.lng })
     }
+  }
+
+  function findLocation (value) {
+      geocoder.geocode({ 'address': value }, function (results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          debugger
+          var location = results[0].geometry.location;
+          resetMapPosition({lat: location.lat(), lng: location.lng()})
+          // map.setCenter(location);
+          // marker.setPosition(location);
+          var address = mapApiToFormFields(results[0]);
+          updateForm(address);
+        } else {
+          console.error('Nenhum resultado encontrado')
+          // $nameField.classList.add('is-invalid');
+          // $nameField.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Endereço não encontrado</small>')
+        }
+      });
   }
 
   function mapApiToFormFields (place) {
@@ -215,7 +257,7 @@
     geocoder = new google.maps.Geocoder();
     map = new google.maps.Map(doc.getElementById('map'), {
       center: latLng,
-      zoom: 15,
+      zoom: 11,
       mapTypeControl: true,
       mapTypeControlOptions: {
         position: google.maps.ControlPosition.TOP_CENTER
@@ -242,6 +284,17 @@
     autocomplete.addListener('place_changed', handleAutocomplete);
 
     $form.addEventListener('submit', handleSubmit);
+    $form.addEventListener('change', function (e) {
+      
+      console.dir(e.target.name)
+      switch(e.target.name) {
+        case 'cep':
+          findLocation(e.target.value);
+        default:
+          return false; 
+      }
+    });
+
     $modal.modal('show').on("shown.bs.modal", function () {
       resetMapPosition({
         lat: initialData.lat,

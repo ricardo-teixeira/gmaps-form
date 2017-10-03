@@ -15,7 +15,7 @@ body {
   top: 15px;
   left: 15px;
   z-index: 100;
-  padding: 1rem;
+  padding: 20px;
   box-shadow: 0 0 10px #bbb;
 }
 
@@ -24,12 +24,14 @@ body {
   text-transform: uppercase;
 }
 
-.card-form .pr-1 {
-  padding-right: 6px !important;
-}
+@media screen and (min-width: 768px) {
+  .card-form .pr-1 {
+    padding-right: 6px !important;
+  }
 
-.card-form .pl-1 {
-  padding-left: 6px !important;
+  .card-form .pl-1 {
+    padding-left: 6px !important;
+  }
 }
 
 .card-form .form-group, .card-form .form-group label {
