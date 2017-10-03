@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Simple Map</title>
+  <meta name="viewport" content="initial-scale=1.0">
+  <meta charset="utf-8">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
+  <link rel="stylesheet" href="src/app.css">
+</head>
+
+<body>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header"> <button type="button" class="collapsed navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-6"
+          aria-expanded="false"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button>        <a href="#" class="navbar-brand">Brand</a> </div>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">Link</a></li>
+          <li><a href="#">Link</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="modal-page modal fade" id="mapsModal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="mapsModalLabel">Localização do imóvel</h4>
+        </div>
+        <div class="modal-body">
+          <div class="card card-form">
+            <form id="mapsForm">
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-lg-6 pr-1">
+                    <label>País</label>
+                    <select class="form-control form-control-sm" name="country" placeholder="País" required></select>
+                  </div>
+                  <div class="col-lg-6 pl-1">
+                    <label>Estado</label>
+                    <select class="form-control form-control-sm" name="state" placeholder="Estado" required></select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Cidade</label>
+                <select class="form-control form-control-sm" name="city" placeholder="Cidade" required></select>
+              </div>
+
+              <div class="form-group">
+                <label>Bairro</label>
+                <input type="text" class="form-control form-control-sm" name="neighborhood" placeholder="Bairro" required />
+              </div>
+
+              <div class="form-group">
+                <label>Logradouro</label>
+                <input type="text" class="form-control form-control-sm" placeholder="Logradouro" name="street" id="autocomplete" required />
+              </div>
+
+              <div class="form-group">
+                <label>CEP</label>
+                <input type="text" class="form-control form-control-sm" name="cep" placeholder="CEP" required />
+              </div>
+
+              <input type="hidden" class="form-control form-control-sm" name="lat" placeholder="Latitude" readonly />
+              <input type="hidden" class="form-control form-control-sm" name="lng" placeholder="Longitude" readonly />
+
+              <button type="submit" class="btn btn-primary btn-block mt-3">Salvar</button>
+            </form>
+          </div>
+          <div class="card card-maps">
+            <div id="mapsLoading" class="maps-loading d-flex align-items-center">
+              <div class="maps-loading-text">Carregando mapa...</div>
+            </div>
+            <div id="map"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBT63KLQ-X5gapWfSxWZy-_uHU4zA2CaQs&libraries=places" defer></script>
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="src/app.js"></script>
+</body>
+
+</html>
