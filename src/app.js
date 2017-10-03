@@ -37,13 +37,13 @@
   getCities()
 
   function getCountries () {
-    axios({
+    $.ajax({
       method: 'GET',
-      url: 'json/countries.json'
+      url: 'src/json/countries.json'
     }).then(function (response) {
       var $countriesSelect = $form.querySelector('[name="country"]')
       var $countryList = '<option value="">Selecione</option>';
-      response.data.forEach(function (country) {
+      response.forEach(function (country) {
         return $countryList += '<option value="' + country.iso + '">' + country.name + '</option>';
       })
 
@@ -52,13 +52,13 @@
   }
 
   function getStates () {
-    axios({
+    $.ajax({
       method: 'GET',
-      url: 'json/states.json'
+      url: 'src/json/states.json'
     }).then(function (response) {
       var $statesSelect = $form.querySelector('[name="state"]')
       var $stateList = '<option value="">Selecione</option>';
-      response.data.forEach(function (state) {
+      response.forEach(function (state) {
         return $stateList += '<option value="' + state.name + '">' + state.name + '</option>';
       })
 
@@ -67,13 +67,13 @@
   }
 
   function getCities () {
-    axios({
+    $.ajax({
       method: 'GET',
-      url: 'json/cities.json'
+      url: 'src/json/cities.json'
     }).then(function (response) {
       var $citiesSelect = $form.querySelector('[name="city"]')
       var $cityList = '<option value="">Selecione</option>';
-      response.data.forEach(function (city) {
+      response.forEach(function (city) {
         return $cityList += '<option value="' + city.name + '">' + city.name + '</option>';
       })
 
@@ -93,11 +93,6 @@
           $form.elements[field].value = fields[field] || '';
         }
       })
-
-      resetMapPosition({
-        lat: address.lat,
-        lng: address.lng
-      });
     }
   }
 
@@ -105,6 +100,7 @@
     geocoder.geocode({
       latLng: pos
     }, function (responses) {
+      // resetMapPosition(pos);
       if (responses && responses.length > 0) {
         console.log('responses[0]', responses[0])
         var address = mapApiToFormFields(responses[0]);

@@ -10,6 +10,7 @@ body {
 .card-form {
   background-color: #fff;
   max-width: 350px;
+  width: 100%;
   position: absolute;
   top: 15px;
   left: 15px;
