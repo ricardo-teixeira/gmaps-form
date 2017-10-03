@@ -22,13 +22,13 @@
   }
 
   var formFieldsMap = {
-    route: 'street',
-    street_number: 'street_number',
-    country: 'country',
-    administrative_area_level_2: 'city',
-    administrative_area_level_1: 'state',
-    political: 'neighborhood',
-    postal_code: 'cep'
+    route: ['long_name', 'street'],
+    street_number: ['long_name', 'street_number'],
+    country: ['short_name', 'country'],
+    administrative_area_level_2: ['long_name', 'city'],
+    administrative_area_level_1: ['long_name', 'state'],
+    political: ['long_name', 'neighborhood'],
+    postal_code: ['long_name', 'cep']
   }
 
   /****************************/
@@ -44,7 +44,7 @@
       var $countriesSelect = $form.querySelector('[name="country"]')
       var $countryList = '<option value="">Selecione</option>';
       response.data.forEach(function (country) {
-        return $countryList += '<option value="' + country.name + '">' + country.name + '</option>';
+        return $countryList += '<option value="' + country.iso + '">' + country.name + '</option>';
       })
 
       $countriesSelect.innerHTML = $countryList;
@@ -201,8 +201,9 @@
     for (var i = 0; i < place.address_components.length; i++) {
       var addressType = place.address_components[i].types[0];
       if (formFieldsMap[addressType]) {
-        var value = place.address_components[i].long_name;
-        address[formFieldsMap[addressType]] = value;
+        var addressApiProp = formFieldsMap[addressType][0];
+        var value = place.address_components[i][addressApiProp];
+        address[formFieldsMap[addressType][1]] = value;
       }
     }
 
@@ -237,14 +238,14 @@
     google.maps.event.addListener(map, 'tilesloaded', function (e) {
       var $loading = document.getElementById('mapsLoading');
       if ($loading) {
-        $loading.remove()
+        $loading.remove();
       }
     });
 
     autocomplete = new google.maps.places.Autocomplete((document.getElementById('autocomplete')), { types: ['geocode'] });
     autocomplete.addListener('place_changed', handleAutocomplete);
 
-    $form.addEventListener('submit', handleSubmit)
+    $form.addEventListener('submit', handleSubmit);
     $modal.modal('show').on("shown.bs.modal", function () {
       resetMapPosition({
         lat: initialData.lat,
