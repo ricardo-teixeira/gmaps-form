@@ -5,7 +5,7 @@
   var $modal = $('#mapsModal');
   var map, marker, autocomplete, geocoder;
   var initialData = {
-    street: 'Avenida José de Souza Campos',
+    street: 'Rua Itapecirica da Serra',
     country: 'BR',
     state: 'SP',
     city: 'Campinas',
@@ -13,7 +13,7 @@
     lng: -47.046664
   }
 
-  var formFieldsSchema = {
+  var FORM_FIELDS_SCHEMA = {
     street: '',
     country: '',
     state: '',
@@ -24,12 +24,12 @@
     lng: ''
   }
 
-  var formFieldsMap = {
+  var FORM_FIELDS_MAP = {
     route: ['long_name', 'street'],
     country: ['short_name', 'country'],
     administrative_area_level_2: ['long_name', 'city'],
     administrative_area_level_1: ['short_name', 'state'],
-    political: ['long_name', 'neighborhood'],
+    sublocality_level_1: ['long_name', 'neighborhood'],
     postal_code: ['long_name', 'cep']
   };
   /****************************/
@@ -88,7 +88,7 @@
 
   function updateForm (fields) {
     if (fields) {
-      var address = Object.assign({}, formFieldsSchema, fields);
+      var address = Object.assign({}, FORM_FIELDS_SCHEMA, fields);
 
       Object.keys(address).forEach(function (field) {
         var element = $form.elements[field];
@@ -143,7 +143,7 @@
 
   function getFormValues () {
     var values = {};
-    Object.keys(formFieldsSchema).forEach(function (key) {
+    Object.keys(FORM_FIELDS_SCHEMA).forEach(function (key) {
       var field = $form.elements[key];
       if (field) {
         values[key] = $form.elements[key].value;
@@ -222,8 +222,8 @@
     var place = autocomplete.getPlace();
     if (Object.keys(place).length > 1) {
       var address = mapApiToFormFields(place)
-      updateForm(address)
-      geocodePosition({ lat: address.lat, lng: address.lng })
+      updateForm(address);
+      resetMapPosition({ lat: address.lat, lng: address.lng });
     }
   }
 
@@ -245,17 +245,24 @@
 
   function mapApiToFormFields (place) {
     var address = {};
+
     address.lat = place.geometry.location.lat();
     address.lng = place.geometry.location.lng();
 
-    for (var i = 0; i < place.address_components.length; i++) {
-      var addressType = place.address_components[i].types[0];
-      if (formFieldsMap[addressType]) {
-        var addressApiProp = formFieldsMap[addressType][0];
-        var value = place.address_components[i][addressApiProp];
-        address[formFieldsMap[addressType][1]] = value;
+    place.address_components.forEach(function (component) {
+      var formField;
+
+      component.types.forEach(function (type) {
+        if (FORM_FIELDS_MAP[type]) {
+          formField = FORM_FIELDS_MAP[type];
+        }
+      });
+
+      if (formField) {
+        var value = component[formField[0]];
+        address[formField[1]] = value;
       }
-    }
+    });
 
     return address;
   }
