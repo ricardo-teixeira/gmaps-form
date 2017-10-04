@@ -5,15 +5,19 @@
   var $modal = $('#mapsModal');
   var map, marker, autocomplete, geocoder;
   var initialData = {
+    street: 'Avenida José de Souza Campos',
+    country: 'BR',
+    state: 'SP',
+    city: 'Campinas',
     lat: -22.889765,
     lng: -47.046664
   }
 
-  var defaultFormFields = {
+  var formFieldsSchema = {
     street: '',
-    country: 'BR',
-    state: 'SP',
-    city: 'Campinas',
+    country: '',
+    state: '',
+    city: '',
     neighborhood: '',
     cep: '',
     lat: '',
@@ -27,14 +31,13 @@
     administrative_area_level_1: ['short_name', 'state'],
     political: ['long_name', 'neighborhood'],
     postal_code: ['long_name', 'cep']
-  }
-
+  };
   /****************************/
-  
+
   $.when(getCountries(), getStates(), getCities()).then(function () {
     setTimeout(function () {
-      updateForm(defaultFormFields);
-    }, 100)
+      updateForm(initialData);
+    }, 1000);
   })
 
   function getCountries () {
@@ -79,14 +82,13 @@
       })
 
       $citiesSelect.innerHTML = $cityList;
-    })
+    });
   }
-
   /****************************/
 
   function updateForm (fields) {
     if (fields) {
-      var address = Object.assign({}, defaultFormFields, fields);
+      var address = Object.assign({}, formFieldsSchema, fields);
 
       Object.keys(address).forEach(function (field) {
         var element = $form.elements[field];
@@ -101,7 +103,6 @@
     geocoder.geocode({
       latLng: pos
     }, function (responses) {
-      // resetMapPosition(pos);
       if (responses && responses.length > 0) {
         var address = mapApiToFormFields(responses[0]);
         address.lat = pos.lat;
@@ -119,7 +120,7 @@
     geocodePosition(latLng);
   }
 
-  function cleanErrors () {
+  function cleanFormErrors () {
     var $errorsText = $form.querySelectorAll('.text-danger');
     var $errorsClass = $form.querySelectorAll('.is-invalid');
 
@@ -134,51 +135,73 @@
 
   function resetMapPosition (pos) {
     google.maps.event.trigger(map, "resize");
-    map.setCenter(pos);
-    marker.setPosition(pos);
+    if (pos.lat && pos.lng) {
+      map.setCenter(pos);
+      marker.setPosition(pos);
+    }
+  }
+
+  function getFormValues () {
+    var values = {};
+    Object.keys(formFieldsSchema).forEach(function (key) {
+      var field = $form.elements[key];
+      if (field) {
+        values[key] = $form.elements[key].value;
+      }
+    });
+
+    return values;
   }
 
   function validateForm () {
-    cleanErrors();
-    // TODO: Validate form
-    console.warn('TODO: Validate form')
+    cleanFormErrors();
 
-    var formFields = {};
-    Object.keys(defaultFormFields).forEach(function (key) {
-      var field = $form.elements[key];
-      if (field) {
-        formFields[key] = $form.elements[key].value;
-      }
+    var formValues = getFormValues();
+    var isValid = Object.keys(formValues).every(function (key) {
+      return !!formValues[key];
     })
 
+    if (!isValid) {
+      Object.keys(formValues).forEach(function (key) {
+        var $field = $form.elements[key];
+
+        if (!$field.value && $field.type != 'hidden') {
+          $field.classList.add('is-invalid');
+          $field.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Obrigatório</small>')
+        }
+
+        return !!formValues[key];
+      });
+
+      return false;
+    }
+
     var latLng = {
-      lat: parseFloat(formFields.lat),
-      lng: parseFloat(formFields.lng)
+      lat: parseFloat(formValues.lat),
+      lng: parseFloat(formValues.lng)
     };
 
     geocoder.geocode({ 'location': latLng }, function (results, status) {
       if (status == google.maps.GeocoderStatus.OK) {
-        var address = mapApiToFormFields(results[0]);
+        var mapsAddress = mapApiToFormFields(results[0]);
 
-        if (address.street != '' && address.street != formFields.street) {
+        if (mapsAddress.street && mapsAddress.street != formValues.street) {
           $form.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Logradouro incorreto</small>')
         }
 
-        if (address.neighborhood != '' && address.neighborhood != formFields.neighborhood) {
+        if (mapsAddress.neighborhood && mapsAddress.neighborhood != formValues.neighborhood) {
           $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
         }
 
-        if (address.cep != '' && address.cep != formFields.cep) {
+        if (mapsAddress.cep && mapsAddress.cep != formValues.cep) {
           $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
         }
+
       } else {
-        console.error('Nenhum resultado encontrado')
-        // $nameField.classList.add('is-invalid');
-        // $nameField.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Endereço não encontrado</small>')
+        $form.insertAdjacentHTML('beforeend', '<div class="is-invalid"><small class="text-danger mt-2">Endereço não encontrado</small></div>');
       }
     });
 
-    var isValid = true;
     return isValid;
   }
 
@@ -187,19 +210,10 @@
     var valid = validateForm();
 
     if (valid) {
-      var $nameField = $form.querySelector('[name="address"]');
-  
-      var addressString = '';
-
-      var formFields = {};
-      Object.keys(defaultFormFields).forEach(function (key) {
-        var field = $form.elements[key];
-        if (field) {
-          formFields[key] = $form.elements[key].value;
-        }
-      })
-  
-      console.log('formFields', formFields)
+      var values = getFormValues();
+      console.log('formFields', values)
+      // TODO: return values to InGaia form
+      alert(JSON.stringify(values))
       return
     }
   }
@@ -214,21 +228,19 @@
   }
 
   function findLocation (value) {
-      geocoder.geocode({ 'address': value }, function (results, status) {
-        if (status == google.maps.GeocoderStatus.OK) {
-          debugger
-          var location = results[0].geometry.location;
-          resetMapPosition({lat: location.lat(), lng: location.lng()})
-          // map.setCenter(location);
-          // marker.setPosition(location);
-          var address = mapApiToFormFields(results[0]);
-          updateForm(address);
-        } else {
-          console.error('Nenhum resultado encontrado')
-          // $nameField.classList.add('is-invalid');
-          // $nameField.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Endereço não encontrado</small>')
-        }
-      });
+    cleanFormErrors();
+
+    geocoder.geocode({ 'address': value }, function (results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        var address = mapApiToFormFields(results[0]);
+        var location = results[0].geometry.location;
+        resetMapPosition({ lat: location.lat(), lng: location.lng() })
+        updateForm(address);
+      } else {
+        console.error('Nenhum resultado encontrado');
+        $form.insertAdjacentHTML('beforeend', '<div class="is-invalid"><small class="text-danger mt-2">Endereço não encontrado</small></div>');
+      }
+    });
   }
 
   function mapApiToFormFields (place) {
@@ -249,15 +261,15 @@
   }
 
   function initMap () {
-    var latLng = {
-      lat: initialData.lat,
-      lng: initialData.lng
-    };
+    // var latLng = {
+    //   lat: initialData.lat,
+    //   lng: initialData.lng
+    // };
 
     geocoder = new google.maps.Geocoder();
     map = new google.maps.Map(doc.getElementById('map'), {
-      center: latLng,
-      zoom: 11,
+      // center: latLng,
+      zoom: 12,
       mapTypeControl: true,
       mapTypeControlOptions: {
         position: google.maps.ControlPosition.TOP_CENTER
@@ -266,7 +278,7 @@
     });
 
     marker = new google.maps.Marker({
-      position: latLng,
+      // position: latLng,
       map: map,
       draggable: true
     });
@@ -285,13 +297,11 @@
 
     $form.addEventListener('submit', handleSubmit);
     $form.addEventListener('change', function (e) {
-      
-      console.dir(e.target.name)
-      switch(e.target.name) {
+      switch (e.target.name) {
         case 'cep':
           findLocation(e.target.value);
         default:
-          return false; 
+          return false;
       }
     });
 
