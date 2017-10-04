@@ -8,10 +8,12 @@
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
+  <link rel="stylesheet" href="src/imob.css">
+  <link rel="stylesheet" href="src/demo.css">
   <link rel="stylesheet" href="src/app.css">
 </head>
 
-<body>
+<body class="bootstrap_for_gaia">
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
       <div class="navbar-header">
@@ -35,6 +37,60 @@
       </div>
     </div>
   </nav>
+
+  <!-- SAMPLE FORM -->
+  <div class="col-md-offset-2 col-md-8">
+    <form id="exampleForm">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-sm-6 pr-1">
+            <label>País</label>
+            <input class="form-control form-control-sm" name="country" placeholder="País" />
+            <!-- <select class="form-control form-control-sm" name="country" placeholder="País"></select> -->
+          </div>
+          <div class="col-sm-6 pl-1">
+            <label>Estado</label>
+            <input class="form-control form-control-sm" name="state" placeholder="Estado" />
+            <!-- <select class="form-control form-control-sm" name="state" placeholder="Estado"></select> -->
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Cidade</label>
+        <input class="form-control form-control-sm" name="city" placeholder="Cidade" />
+        <!-- <select class="form-control form-control-sm" name="city" placeholder="Cidade"></select> -->
+      </div>
+
+      <div class="form-group">
+        <label>Logradouro</label>
+        <input type="text" class="form-control form-control-sm" placeholder="Ex.: José de Souza Campos" name="street" />
+      </div>
+
+      <div class="form-group">
+        <label>CEP</label>
+        <input type="text" class="form-control form-control-sm" name="cep" placeholder="Ex.: 13000-000" />
+      </div>
+
+      <div class="form-group">
+        <label>Bairro</label>
+          <input type="text" class="form-control form-control-sm" name="neighborhood" placeholder="Ex.: Centro" disabled="disabled" />
+      </div>
+
+      <input type="hidden" class="form-control form-control-sm" name="lat" placeholder="Latitude" readonly />
+      <input type="hidden" class="form-control form-control-sm" name="lng" placeholder="Longitude" readonly />
+
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+
+        <button id="addNewAddress" type="button" class="btn btn-default text-uppercase" data-toggle="modal" data-target="#mapsModal">
+          Cadastrar novo endereço
+        </button>
+      </div>
+
+    </form>
+  </div>
+  <!-- SAMPLE FORM END -->
 
   <div class="modal-page modal fade" id="mapsModal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel"
     aria-hidden="true">
@@ -73,15 +129,21 @@
               </div>
 
               <div class="form-group">
-                <label>Bairro</label>
-                <input type="text" class="form-control form-control-sm" name="neighborhood" placeholder="Ex.: Centro" />
+                <label>CEP</label>
+                <input type="text" class="form-control form-control-sm" name="cep" placeholder="Ex.: 13000-000" 
+                  data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-html="true"
+                  data-content="Não sabe seu CEP? Encontre-o <a href='http://www.buscacep.correios.com.br/sistemas/buscacep/' target='_blank'>aqui</a>"/>
               </div>
 
               <div class="form-group">
-                <label>CEP</label>
-                <input type="text" class="form-control form-control-sm" name="cep" placeholder="Ex.: 13000-000" 
-                data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-html="true"
-                data-content="Não sabe seu CEP? Encontre-o <a href='http://www.buscacep.correios.com.br/sistemas/buscacep/' target='_blank'>aqui</a>"/>
+                <label>Bairro</label>
+                <div class="input-group">
+                  <input type="text" class="form-control form-control-sm" name="neighborhood" placeholder="Ex.: Centro" disabled="disabled" />
+                  <span class="input-group-addon">
+                    <i class="glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" 
+                      data-container="body" data-trigger="hover" data-content="Utilize o bairro do Google Maps. Você pode definir um bairro comercial no cadastro do imóvel."></i>
+                  </span>
+                </div>
               </div>
 
               <input type="hidden" class="form-control form-control-sm" name="lat" placeholder="Latitude" readonly />
@@ -89,9 +151,6 @@
 
               <button type="submit" class="btn btn-primary btn-block mt-3">Salvar</button>
 
-              <div class="form-group text-center">
-                <small><a href="#" data-dismiss="modal" data-toggle="modal" data-target="#modalFallback">Ainda não conseguiu localizar seu endereço?</a></small>
-              </div>
             </form>
           </div>
           <div class="card card-maps">
@@ -105,61 +164,11 @@
     </div>
   </div>
 
-
-  <!-- MODAL FALLBACK JUST FOR EXAMPLE -->
-  <!-- Modal -->
-  <div class="modal fade" id="modalFallback" tabindex="-1" role="dialog" aria-labelledby="modalFallbackLabel">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalFallbackLabel">Novo endereço</h4>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6">
-              <p>Antes de incluir um endereço, certifique-se que este realmente não está disponível no sistema.</p>
-              <p>Insira apenas endereços válidos. Consulte o site do Correios (www.correios.com.br)</p>
-              <p>Não se esqueça também de preencher todos os campos, conferindo a ortografia.</p>
-            </div>
-            <div class="col-md-6">
-              <form>
-                <div class="form-group">
-                  <input type="text" value="Brasil" class="form-control" placeholder="País">
-                </div>
-                <div class="form-group">
-                  <input type="text" value="São Paulo" class="form-control" placeholder="Estado">
-                </div>
-                <div class="form-group">
-                  <input type="text" value="Campinas" class="form-control" placeholder="Cidade">
-                </div>
-                <div class="form-group">
-                  <input type="text" class="form-control" placeholder="Bairro">
-                </div>
-                <div class="form-group">
-                  <input type="text" class="form-control" placeholder="Tipo (Ex.: Rua, Avenida, etc)">
-                </div>
-                <div class="form-group">
-                  <input type="text" class="form-control" placeholder="Logradouro (Ex.: José de Souza Campos)">
-                </div>
-                <div class="form-group">
-                  <input type="text" class="form-control" placeholder="CEP">
-                </div>
-                <div class="form-group text-center">
-                  <button type="button" class="btn btn-primary">Salvar</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBT63KLQ-X5gapWfSxWZy-_uHU4zA2CaQs&libraries=places" defer></script>
   <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
   <script src="src/app.js"></script>
+  <script src="src/demo.js"></script>
   <script>
     $('[data-toggle="popover"]').popover()
   </script>
