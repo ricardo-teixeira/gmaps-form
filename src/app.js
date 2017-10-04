@@ -5,23 +5,29 @@
   var $modal = $('#mapsModal');
   var map, marker, autocomplete, geocoder;
   var initialData = {
-    street: 'Rua Itapecirica da Serra',
+    street: 'Mário Carniceli',
     country: 'BR',
     state: 'SP',
-    city: 'Campinas',
-    lat: -22.889765,
-    lng: -47.046664
+    city: 'Campinas'
+  }
+
+  function Field (props) {
+    var defaults = {
+      value: '',
+      required: true
+    }
+    return Object.assign({}, defaults, props);
   }
 
   var FORM_FIELDS_SCHEMA = {
-    street: '',
-    country: '',
-    state: '',
-    city: '',
-    neighborhood: '',
-    cep: '',
-    lat: '',
-    lng: ''
+    street: new Field(),
+    country: new Field(),
+    state: new Field(),
+    city: new Field(),
+    neighborhood: new Field({ required: false }),
+    cep: new Field(),
+    lat: new Field(),
+    lng: new Field()
   }
 
   var FORM_FIELDS_MAP = {
@@ -93,9 +99,9 @@
       Object.keys(address).forEach(function (field) {
         var element = $form.elements[field];
         if (element) {
-          $form.elements[field].value = fields[field] || '';
+          $form.elements[field].value = (fields[field] && fields[field] != 'Unnamed Road') ? fields[field] : '';
         }
-      })
+      });
     }
   }
 
@@ -108,14 +114,15 @@
         address.lat = pos.lat;
         address.lng = pos.lng;
         updateForm(address);
+        resetMapPosition(pos, true);
       }
     });
   }
 
-  function handleMarkerDrag (evt) {
+  function handleMarkerDrag (e) {
     var latLng = {
-      lat: evt.latLng.lat(),
-      lng: evt.latLng.lng()
+      lat: e.latLng.lat(),
+      lng: e.latLng.lng()
     }
     geocodePosition(latLng);
   }
@@ -133,11 +140,13 @@
     })
   }
 
-  function resetMapPosition (pos) {
-    google.maps.event.trigger(map, "resize");
+  function resetMapPosition (pos, zoom) {
     if (pos.lat && pos.lng) {
       map.setCenter(pos);
       marker.setPosition(pos);
+      if (zoom) {
+        map.setZoom(19);
+      }
     }
   }
 
@@ -158,78 +167,93 @@
 
     var formValues = getFormValues();
     var isValid = Object.keys(formValues).every(function (key) {
-      return !!formValues[key];
-    })
-
-    if (!isValid) {
-      Object.keys(formValues).forEach(function (key) {
-        var $field = $form.elements[key];
-
-        if (!$field.value && $field.type != 'hidden') {
-          $field.classList.add('is-invalid');
-          $field.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Obrigatório</small>')
-        }
-
-        return !!formValues[key];
-      });
-
-      return false;
-    }
-
-    var latLng = {
-      lat: parseFloat(formValues.lat),
-      lng: parseFloat(formValues.lng)
-    };
-
-    geocoder.geocode({ 'location': latLng }, function (results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-        var mapsAddress = mapApiToFormFields(results[0]);
-
-        if (mapsAddress.street && mapsAddress.street != formValues.street) {
-          $form.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Logradouro incorreto</small>')
-        }
-
-        if (mapsAddress.neighborhood && mapsAddress.neighborhood != formValues.neighborhood) {
-          $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
-        }
-
-        if (mapsAddress.cep && mapsAddress.cep != formValues.cep) {
-          $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
-        }
-
-      } else {
-        $form.insertAdjacentHTML('beforeend', '<div class="is-invalid"><small class="text-danger mt-2">Endereço não encontrado</small></div>');
-      }
+      return !!formValues[key] || !FORM_FIELDS_SCHEMA[key].required;
     });
 
-    return isValid;
+    return $.Deferred(function () {
+      var self = this;
+
+      if (!isValid) {
+        Object.keys(formValues).forEach(function (key) {
+          var $field = $form.elements[key];
+
+          if (!$field.value && $field.type != 'hidden' && FORM_FIELDS_SCHEMA[key].required) {
+            $field.classList.add('is-invalid');
+            $field.parentNode.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Obrigatório</small>');
+          }
+
+          return !!formValues[key];
+        });
+
+        self.reject();
+      }
+
+      return validateAddressAsync(formValues).then(function () {
+        self.resolve(isValid);
+      }).fail(function () {
+        self.reject();
+      });
+
+    });
+  }
+
+  function validateAddressAsync (address) {
+    return $.Deferred(function () {
+      var self = this;
+      var latLng = {
+        lat: parseFloat(address.lat),
+        lng: parseFloat(address.lng)
+      };
+
+      geocoder.geocode({ 'location': latLng }, function (results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          var mapsAddress = mapApiToFormFields(results[0]);
+
+          if (mapsAddress.street && mapsAddress.street != address.street) {
+            $form.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Logradouro incorreto</small>')
+          }
+
+          if (mapsAddress.neighborhood && mapsAddress.neighborhood != address.neighborhood) {
+            $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
+          }
+
+          if (mapsAddress.cep && mapsAddress.cep != address.cep) {
+            $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
+          }
+
+          self.resolve();
+        } else {
+          self.reject();
+        }
+      });
+    })
   }
 
   function handleSubmit (e) {
     e.preventDefault();
-    var valid = validateForm();
-
-    if (valid) {
-      var values = getFormValues();
-      console.log('formFields', values)
-      // TODO: return values to InGaia form
-      alert(JSON.stringify(values))
-      return
-    }
+    validateForm().then(function (valid) {
+      if (valid) {
+        var values = getFormValues();
+        console.log('formFields', values);
+        // TODO: return values to InGaia form
+        alert(JSON.stringify(values));
+        return
+      }
+    });
   }
 
   function handleAutocomplete () {
+    cleanFormErrors();
     var place = autocomplete.getPlace();
     if (Object.keys(place).length > 1) {
-      var address = mapApiToFormFields(place)
+      var address = mapApiToFormFields(place);
       updateForm(address);
-      resetMapPosition({ lat: address.lat, lng: address.lng });
+      resetMapPosition({ lat: address.lat, lng: address.lng }, true);
     }
   }
 
   function findLocation (value) {
     cleanFormErrors();
-
     geocoder.geocode({ 'address': value }, function (results, status) {
       if (status == google.maps.GeocoderStatus.OK) {
         var address = mapApiToFormFields(results[0]);
@@ -245,7 +269,6 @@
 
   function mapApiToFormFields (place) {
     var address = {};
-
     address.lat = place.geometry.location.lat();
     address.lng = place.geometry.location.lng();
 
@@ -265,6 +288,17 @@
     });
 
     return address;
+  }
+
+  function setLoading (show) {
+    var $loading = document.getElementById('mapsLoading');
+    if ($loading) {
+      if (!show) {
+        $loading.style.display = 'none';
+      } else {
+        $loading.style.display = 'block';
+      }
+    }
   }
 
   function initMap () {
@@ -291,13 +325,7 @@
     });
 
     google.maps.event.addListener(marker, 'dragend', handleMarkerDrag);
-
-    google.maps.event.addListener(map, 'tilesloaded', function (e) {
-      var $loading = document.getElementById('mapsLoading');
-      if ($loading) {
-        $loading.remove();
-      }
-    });
+    google.maps.event.addListener(map, 'tilesloaded', setLoading);
 
     autocomplete = new google.maps.places.Autocomplete((document.getElementById('autocomplete')), { types: ['geocode'] });
     autocomplete.addListener('place_changed', handleAutocomplete);
@@ -313,10 +341,19 @@
     });
 
     $modal.modal('show').on("shown.bs.modal", function () {
-      resetMapPosition({
-        lat: initialData.lat,
-        lng: initialData.lng
-      })
+      google.maps.event.trigger(map, "resize");
+      var address = [];
+
+      Object.keys(initialData).forEach(function (key) {
+        address.push(initialData[key]);
+      });
+
+      geocoder.geocode({ 'address': address.join(', ') }, function (results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          var location = results[0].geometry.location;
+          resetMapPosition({ lat: location.lat(), lng: location.lng() })
+        }
+      });
     });
   }
 
