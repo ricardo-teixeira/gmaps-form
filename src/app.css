@@ -1,16 +1,3 @@
-html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-.bootstrap_for_gaia.modal-open, .modal-open .navbar-fixed-top {
-  margin-right: 0;
-}
-
-/**************************************/
-
 .card-form {
   background-color: #fff;
   max-width: 350px;

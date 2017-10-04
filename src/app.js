@@ -5,10 +5,10 @@
   var $modal = $('#mapsModal');
   var map, marker, autocomplete, geocoder;
   var initialData = {
-    street: 'Mário Carniceli',
-    country: 'BR',
-    state: 'SP',
-    city: 'Campinas'
+    // street: 'Mário Carniceli',
+    // country: 'BR',
+    // state: 'SP',
+    // city: 'Campinas'
   }
 
   function Field (props) {
@@ -40,11 +40,13 @@
   };
   /****************************/
 
-  $.when(getCountries(), getStates(), getCities()).then(function () {
-    setTimeout(function () {
-      updateForm(initialData);
-    }, 1000);
-  })
+  function fetchBasicFields () {
+    $.when(getCountries(), getStates(), getCities()).then(function () {
+      setTimeout(function () {
+        updateForm(initialData);
+      }, 1000);
+    });
+  }
 
   function getCountries () {
     $.ajax({
@@ -185,13 +187,13 @@
           return !!formValues[key];
         });
 
-        self.reject();
+        return self.resolve(false);
       }
 
       return validateAddressAsync(formValues).then(function () {
-        self.resolve(isValid);
+        return self.resolve(isValid);
       }).fail(function () {
-        self.reject();
+        return self.reject(false);
       });
 
     });
@@ -229,14 +231,18 @@
     })
   }
 
-  function handleSubmit (e) {
+  function handleSubmit (e, callback) {
     e.preventDefault();
     validateForm().then(function (valid) {
       if (valid) {
         var values = getFormValues();
         console.log('formFields', values);
-        // TODO: return values to InGaia form
-        alert(JSON.stringify(values));
+
+        if (callback) {
+          callback(values);
+        }
+
+        $modal.modal('hide');
         return
       }
     });
@@ -301,7 +307,12 @@
     }
   }
 
-  function initMap () {
+  function initMap (formData, callback) {
+    if (formData) {
+      initialData = formData;
+    }
+
+    fetchBasicFields()
     // var latLng = {
     //   lat: initialData.lat,
     //   lng: initialData.lng
@@ -330,7 +341,10 @@
     autocomplete = new google.maps.places.Autocomplete((document.getElementById('autocomplete')), { types: ['geocode'] });
     autocomplete.addListener('place_changed', handleAutocomplete);
 
-    $form.addEventListener('submit', handleSubmit);
+    $form.addEventListener('submit', function (e) {
+      handleSubmit(e, callback);
+    });
+
     $form.addEventListener('change', function (e) {
       switch (e.target.name) {
         case 'cep':
@@ -340,7 +354,7 @@
       }
     });
 
-    $modal.modal('show').on("shown.bs.modal", function () {
+    $modal.on("shown.bs.modal", function () {
       google.maps.event.trigger(map, "resize");
       var address = [];
 
@@ -357,5 +371,7 @@
     });
   }
 
-  doc.addEventListener('DOMContentLoaded', initMap)
+  win.mapsAddressFinder = initMap;
+
+  // doc.addEventListener('DOMContentLoaded', initMap)
 })(window, document)
