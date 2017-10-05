@@ -1,20 +1,16 @@
 (function (win, doc) {
-  "use strict"
+  'use strict';
 
   var $form = doc.getElementById('mapsForm');
   var $modal = $('#mapsModal');
   var map, marker, autocomplete, geocoder;
-  var initialData = {
-    // street: 'Mário Carniceli',
-    // country: 'BR',
-    // state: 'SP',
-    // city: 'Campinas'
-  }
+  var initialData = {};
 
   function Field (props) {
     var defaults = {
       value: '',
-      required: true
+      required: true,
+      onChange: function () { }
     }
     return Object.assign({}, defaults, props);
   }
@@ -25,7 +21,9 @@
     state: new Field(),
     city: new Field(),
     neighborhood: new Field({ required: false }),
-    cep: new Field(),
+    cep: new Field({
+      onChange: function (e) { findLocation(e.target.value); }
+    }),
     lat: new Field(),
     lng: new Field()
   }
@@ -133,13 +131,13 @@
     var $errorsText = $form.querySelectorAll('.text-danger');
     var $errorsClass = $form.querySelectorAll('.is-invalid');
 
-    $errorsText.forEach((error) => {
+    $errorsText.forEach(function (error) {
       error.remove();
-    })
+    });
 
-    $errorsClass.forEach((error) => {
+    $errorsClass.forEach(function (error) {
       error.classList.remove('is-invalid');
-    })
+    });
   }
 
   function resetMapPosition (pos, zoom) {
@@ -183,10 +181,8 @@
             $field.classList.add('is-invalid');
             $field.parentNode.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Obrigatório</small>');
           }
-
           return !!formValues[key];
         });
-
         return self.resolve(false);
       }
 
@@ -236,14 +232,12 @@
     validateForm().then(function (valid) {
       if (valid) {
         var values = getFormValues();
-        console.log('formFields', values);
 
         if (callback) {
           callback(values);
         }
 
         $modal.modal('hide');
-        return
       }
     });
   }
@@ -260,17 +254,19 @@
 
   function findLocation (value) {
     cleanFormErrors();
-    geocoder.geocode({ 'address': value }, function (results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-        var address = mapApiToFormFields(results[0]);
-        var location = results[0].geometry.location;
-        resetMapPosition({ lat: location.lat(), lng: location.lng() })
-        updateForm(address);
-      } else {
-        console.error('Nenhum resultado encontrado');
-        $form.insertAdjacentHTML('beforeend', '<div class="is-invalid"><small class="text-danger mt-2">Endereço não encontrado</small></div>');
-      }
-    });
+    if (value && value != '') {
+      geocoder.geocode({ 'address': value }, function (results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          var address = mapApiToFormFields(results[0]);
+          var location = results[0].geometry.location;
+          resetMapPosition({ lat: location.lat(), lng: location.lng() })
+          updateForm(address);
+        } else {
+          console.error('Nenhum resultado encontrado');
+          $form.insertAdjacentHTML('beforeend', '<div class="is-invalid"><small class="text-danger mt-2">Endereço não encontrado</small></div>');
+        }
+      });
+    }
   }
 
   function mapApiToFormFields (place) {
@@ -312,15 +308,10 @@
       initialData = formData;
     }
 
-    fetchBasicFields()
-    // var latLng = {
-    //   lat: initialData.lat,
-    //   lng: initialData.lng
-    // };
+    fetchBasicFields();
 
     geocoder = new google.maps.Geocoder();
     map = new google.maps.Map(doc.getElementById('map'), {
-      // center: latLng,
       zoom: 12,
       mapTypeControl: true,
       mapTypeControlOptions: {
@@ -330,7 +321,6 @@
     });
 
     marker = new google.maps.Marker({
-      // position: latLng,
       map: map,
       draggable: true
     });
@@ -346,12 +336,7 @@
     });
 
     $form.addEventListener('change', function (e) {
-      switch (e.target.name) {
-        case 'cep':
-          findLocation(e.target.value);
-        default:
-          return false;
-      }
+      FORM_FIELDS_SCHEMA[e.target.name].onChange(e);
     });
 
     $modal.on("shown.bs.modal", function () {
@@ -373,5 +358,4 @@
 
   win.mapsAddressFinder = initMap;
 
-  // doc.addEventListener('DOMContentLoaded', initMap)
-})(window, document)
+})(window, document);
