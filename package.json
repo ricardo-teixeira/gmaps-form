@@ -4,13 +4,15 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "./node_modules/.bin/nodemon server"
+    "babel": "babel --presets env src/js/app.js -o build/app.min.js --source-maps inline",
+    "start": "http-server -p 8080"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "express": "^4.16.0",
-    "nodemon": "^1.12.1"
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "http-server": "^0.10.0"
   }
 }
