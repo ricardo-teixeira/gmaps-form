@@ -13,14 +13,11 @@
     $modal = $('#mapsModal');
     initialData = formData || {};
 
-    fetchBasicFields();
-
     function Field (props) {
       var defaults = {
         value: '',
         required: true,
-        // required: true,
-        onChange: function () { }
+        onChange: function () {}
       };
       return Object.assign({}, defaults, props);
     }
@@ -31,7 +28,7 @@
       state: new Field(),
       city: new Field(),
       neighborhood: new Field({ required: false }),
-      cep: new Field(),
+      postal_code: new Field(),
       lat: new Field(),
       lng: new Field()
     };
@@ -59,64 +56,9 @@
       },
       postal_code: {
         value: 'long_name',
-        alias: 'cep'
+        alias: 'postal_code'
       }
     };
-    /****************************/
-
-    function fetchBasicFields () {
-      $.when(getCountries(), getStates(), getCities()).then(function () {
-        setTimeout(function () {
-          updateForm(initialData);
-        }, 1000);
-      });
-    }
-
-    function getCountries () {
-      $.ajax({
-        method: 'GET',
-        url: 'src/json/countries.json'
-      }).then(function (response) {
-        var $countriesSelect = $form.querySelector('[name="country"]')
-        var $countryList = '<option value="">Selecione</option>';
-        response.forEach(function (country) {
-          return $countryList += '<option value="' + country.iso + '">' + country.name + '</option>';
-        })
-
-        $countriesSelect.innerHTML = $countryList;
-      })
-    }
-
-    function getStates () {
-      $.ajax({
-        method: 'GET',
-        url: 'src/json/states.json'
-      }).then(function (response) {
-        var $statesSelect = $form.querySelector('[name="state"]')
-        var $stateList = '<option value="">Selecione</option>';
-        response.forEach(function (state) {
-          return $stateList += '<option value="' + state.code + '">' + state.name + '</option>';
-        })
-
-        $statesSelect.innerHTML = $stateList;
-      })
-    }
-
-    function getCities () {
-      $.ajax({
-        method: 'GET',
-        url: 'src/json/cities.json'
-      }).then(function (response) {
-        var $citiesSelect = $form.querySelector('[name="city"]')
-        var $cityList = '<option value="">Selecione</option>';
-        response.forEach(function (city) {
-          return $cityList += '<option value="' + city.name + '">' + city.name + '</option>';
-        })
-
-        $citiesSelect.innerHTML = $cityList;
-      });
-    }
-    /****************************/
 
     function updateForm (fields) {
       if (fields) {
@@ -140,7 +82,6 @@
           address.lat = pos.lat;
           address.lng = pos.lng;
           updateForm(address);
-          // resetMapPosition(pos, true);
         }
       });
     }
@@ -256,7 +197,7 @@
               $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
             }
 
-            if (mapsAddress.cep && mapsAddress.cep != address.cep) {
+            if (mapsAddress.postal_code && mapsAddress.postal_code != address.postal_code) {
               $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
             }
 
@@ -293,18 +234,12 @@
       }
     }
 
-    function findLocation (value) {
-      cleanFormErrors();
-      if (value && value != '') {
-        geocoder.geocode({ 'address': value }, function (results, status) {
+    function findLocation (address) {
+      if (address && address != '') {
+        geocoder.geocode({ 'address': address }, function (results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
-            var address = mapApiToFormFields(results[0]);
-            var location = results[0].geometry.location;
-            resetMapPosition({ lat: location.lat(), lng: location.lng() })
-            updateForm(address);
-          } else {
-            console.error('Nenhum resultado encontrado');
-            $form.insertAdjacentHTML('beforeend', '<div class="is-invalid"><small class="text-danger mt-2">Endereço não encontrado</small></div>');
+            var place = results[0];
+            focusMarkerPosition(place);
           }
         });
       }
@@ -391,19 +326,15 @@
       });
 
       $modal.on('shown.bs.modal', function () {
+        updateForm(initialData);
         google.maps.event.trigger(map, 'resize');
+        
         var address = [];
-
         Object.keys(initialData).forEach(function (key) {
           address.push(initialData[key]);
         });
 
-        geocoder.geocode({ 'address': address.join(', ') }, function (results, status) {
-          if (status == google.maps.GeocoderStatus.OK) {
-            var place = results[0];
-            focusMarkerPosition(place);
-          }
-        });
+        findLocation(address.join(', '));
       });
     }
   }

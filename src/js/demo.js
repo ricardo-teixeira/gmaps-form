@@ -4,17 +4,19 @@
   var $newAddressBtn = document.getElementById('addNewAddress');
 
   var initialData = {
-    country: 'Brasil',
-    state: 'São Paulo',
-    city: 'Campinas'
+    cidade: 'Brasil',
+    estado: 'São Paulo',
+    pais: 'Campinas'
   };
+
+  var mappedData = mapFormValuesToApiProps(initialData);
 
   applyValuesValues(initialData);
 
   document.addEventListener('DOMContentLoaded', function () {
     var data = getFormValues();
-    mapsAddressFinder(data, applyValuesValues);
-    $('#mapsModal').modal('show')
+    mapsAddressFinder(mapFormValuesToApiProps(data), applyValuesValues);
+    $('#mapsModal').modal('show');
   })
 
   $newAddressBtn.addEventListener('click', function () {
@@ -27,6 +29,34 @@
     var values = getFormValues();
     $submitResults.innerHTML = '<pre>' + syntaxHighlight(values) + '</pre>';
   });
+
+  function mapFormValuesToApiProps (values, reverse) {
+    var mappedObj = {};
+    var keyMap = {
+      cidade: 'city',
+      estado: 'state',
+      pais: 'country',
+      bairro: 'neighborhood',
+      rua: 'street',
+      cep: 'postal_code'
+    };
+
+    if (reverse) {
+      Object.keys(keyMap).forEach(function (key) {
+        if (values[keyMap[key]]) {
+          mappedObj[key] = values[keyMap[key]];
+        }
+      });
+    } else {
+      Object.keys(values).forEach(function (key) {
+        if (values[key]) {
+          mappedObj[keyMap[key]] = values[key];
+        }
+      });
+    }
+
+    return mappedObj;
+  }
 
   function applyValuesValues (values) {
     Object.keys(values).forEach(function (key) {

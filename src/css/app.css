@@ -41,6 +41,7 @@
 
 .card-form .input-group .form-control {
   border-right: 0;
+  padding-right: 0;
 }
 
 .card-form .input-group .input-group-addon {
