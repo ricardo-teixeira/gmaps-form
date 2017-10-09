@@ -356,18 +356,21 @@
       $modal.on('shown.bs.modal', function () {
         updateForm(initialData);
         google.maps.event.trigger(map, 'resize');
-        
-        var address = [];
-        Object.keys(initialData).forEach(function (key) {
-          address.push(initialData[key]);
-        });
 
-        var location = { 'address': address.join(', ') };
-        if (address.lat && address.lng) {
-          location = { 'location': { lat: address.lat, lng: address.lng }};
+        if (initialData.lat && initialData.lng) {
+          var pos = { lat: parseFloat(initialData.lat), lng: parseFloat(initialData.lng) };
+          marker.setPosition(pos);
+          map.setCenter(pos);
+          map.setZoom(17);
+        } else {
+          var address = [];
+          Object.keys(initialData).forEach(function (key) {
+            address.push(initialData[key]);
+          });
+
+          findLocation({ 'address': address.join(', ') });
         }
 
-        findLocation(location);
       });
     }
   }

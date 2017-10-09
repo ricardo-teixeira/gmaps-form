@@ -7,8 +7,8 @@
     pais: 'Brasil',
     estado: 'São Paulo',
     cidade: 'Campinas',
-    lat: -22.910234675023073,
-    lng: -47.0520915452301
+    lat: -22.885093680732655,
+    lng: -47.007358083605936
   };
 
   var mappedData = mapFormValuesToApiProps(initialData);
