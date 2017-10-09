@@ -223,7 +223,7 @@
             }
 
           });
-          
+
           return self.resolve(false);
         }
 
@@ -379,6 +379,7 @@
 
       var $autocomplete = document.getElementById('mapsAutocomplete');
       autocomplete = new google.maps.places.Autocomplete($autocomplete, { types: ['geocode'] });
+      autocomplete.bindTo('bounds', map);
       autocomplete.addListener('place_changed', handleAutocomplete);
 
       $form.addEventListener('submit', function (e) {

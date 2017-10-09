@@ -10,6 +10,10 @@
   box-shadow: 0 0 10px #bbb;
 }
 
+.card-form .form-control {
+  box-shadow: none;
+}
+
 .card-form .btn {
   margin-top: 15px;
   text-transform: uppercase;
@@ -23,6 +27,10 @@
   padding-left: 6px !important;
 }
 
+.card-form .bg-white {
+  background-color: #fff !important;
+}
+
 /* .card-form .form-control[readonly] {
   border: 0;
   box-shadow: none;
@@ -30,6 +38,14 @@
   padding-left: 0;
   padding-right: 0;
 } */
+
+.card-form .input-group .form-control {
+  border-right: 0;
+}
+
+.card-form .input-group .input-group-addon {
+  color: #00A0C0;
+}
 
 .card-form  .form-control.is-invalid, .card-form .form-control:invalid {
   border-color: #dc3545;

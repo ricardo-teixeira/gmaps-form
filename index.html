@@ -107,7 +107,12 @@
           <div class="card card-form">
             <div class="form-group">
               <label>Buscar endereço</label>
-              <input type="text" class="form-control form-control-sm" placeholder="Ex.: José de Souza Campos" id="mapsAutocomplete" />
+              <div class="input-group">
+                <input type="text" class="form-control form-control-sm" placeholder="Ex.: José de Souza Campos" id="mapsAutocomplete" />
+                <span class="input-group-addon bg-white">
+                  <i class="glyphicon glyphicon-search"></i>
+                </span>
+              </div>
             </div>
             <form id="mapsForm">
               <div class="form-group">
@@ -148,9 +153,9 @@
                 <div class="input-group">
                   <input type="text" class="form-control form-control-sm" name="neighborhood" placeholder="Ex.: Centro" disabled="disabled"
                   />
-                  <span class="input-group-addon">
-                    <i class="glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" 
-                      data-container="body" data-trigger="hover" data-content="Utilize o bairro do Google Maps. Você pode definir um bairro comercial no cadastro do imóvel."></i>
+                  <span class="input-group-addon" data-toggle="popover" data-placement="bottom" data-container="body" data-trigger="hover"
+                    data-content="Utilize o bairro do Google Maps. Você pode definir um bairro comercial no cadastro do imóvel.">
+                    <i class="glyphicon glyphicon-question-sign"></i>
                   </span>
                 </div>
               </div>
