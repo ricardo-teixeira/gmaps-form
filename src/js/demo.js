@@ -4,24 +4,34 @@
   var $newAddressBtn = document.getElementById('addNewAddress');
 
   var initialData = {
-    cidade: 'Brasil',
+    pais: 'Brasil',
     estado: 'São Paulo',
-    pais: 'Campinas'
+    cidade: 'Campinas',
+    lat: -22.910234675023073,
+    lng: -47.0520915452301
   };
 
   var mappedData = mapFormValuesToApiProps(initialData);
-
   applyValuesValues(initialData);
 
   document.addEventListener('DOMContentLoaded', function () {
     var data = getFormValues();
-    mapsAddressFinder(mapFormValuesToApiProps(data), applyValuesValues);
+    var formatted = mapFormValuesToApiProps(data);
+
+    mapsAddressFinder(formatted, function (values) {
+      applyValuesValues(mapFormValuesToApiProps(values, true));
+    });
+
     $('#mapsModal').modal('show');
-  })
+  });
 
   $newAddressBtn.addEventListener('click', function () {
     var data = getFormValues();
-    mapsAddressFinder(data, applyValuesValues);
+    var formatted = mapFormValuesToApiProps(data);
+
+    mapsAddressFinder(formatted, function (values) {
+      applyValuesValues(mapFormValuesToApiProps(values, true));
+    });
   });
 
   $exampleForm.addEventListener('submit', function (e) {
@@ -33,12 +43,14 @@
   function mapFormValuesToApiProps (values, reverse) {
     var mappedObj = {};
     var keyMap = {
-      cidade: 'city',
-      estado: 'state',
       pais: 'country',
+      estado: 'state',
+      cidade: 'city',
       bairro: 'neighborhood',
       rua: 'street',
-      cep: 'postal_code'
+      cep: 'postal_code',
+      lat: 'lat',
+      lng: 'lng'
     };
 
     if (reverse) {

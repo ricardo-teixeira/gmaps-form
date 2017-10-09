@@ -43,15 +43,13 @@
     <form id="exampleForm">
       <div class="form-group">
         <div class="row">
-          <div class="col-sm-6 pr-1">
+          <div class="col-xs-6 pr-1">
             <label>País</label>
             <input class="form-control form-control-sm" name="pais" placeholder="País" />
-            <!-- <select class="form-control form-control-sm" name="country" placeholder="País"></select> -->
           </div>
-          <div class="col-sm-6 pl-1">
+          <div class="col-xs-6 pl-1">
             <label>Estado</label>
             <input class="form-control form-control-sm" name="estado" placeholder="Estado" />
-            <!-- <select class="form-control form-control-sm" name="state" placeholder="Estado"></select> -->
           </div>
         </div>
       </div>
@@ -59,7 +57,6 @@
       <div class="form-group">
         <label>Cidade</label>
         <input class="form-control form-control-sm" name="cidade" placeholder="Cidade" />
-        <!-- <select class="form-control form-control-sm" name="city" placeholder="Cidade"></select> -->
       </div>
 
       <div class="form-group">
@@ -77,8 +74,17 @@
         <input type="text" class="form-control form-control-sm" name="bairro" placeholder="Ex.: Centro" disabled="disabled" />
       </div>
 
-      <input type="hidden" class="form-control form-control-sm" name="lat" placeholder="Latitude" readonly />
-      <input type="hidden" class="form-control form-control-sm" name="lng" placeholder="Longitude" readonly />
+      <div class="form-group row">
+        <div class="col-xs-6 pr-1">
+          <label>Latitude</label>
+          <input type="text" class="form-control form-control-sm" name="lat" placeholder="Latitude" />
+        </div>
+
+        <div class="col-xs-6 pl-1">
+          <label>Longitude</label>
+          <input type="text" class="form-control form-control-sm" name="lng" placeholder="Longitude" />
+        </div>
+      </div>
 
       <div class="text-center">
         <button type="submit" class="btn btn-primary mt-3">Salvar</button>
@@ -104,7 +110,7 @@
         </div>
         <div class="modal-body">
           <div class="card card-form">
-            <div class="form-group">
+            <div class="card-header form-group">
               <label>Buscar endereço</label>
               <div class="input-group">
                 <input type="text" class="form-control form-control-sm" placeholder="Ex.: José de Souza Campos" id="mapsAutocomplete" />
@@ -113,58 +119,64 @@
                 </span>
               </div>
             </div>
-            <form id="mapsForm">
-              <div class="form-group">
-                <div class="row">
-                  <div class="col-xs-6 pr-1">
-                    <label>País</label>
-                    <input class="form-control form-control-sm" name="country" placeholder="País" readonly />
-                    <!-- <select class="form-control form-control-sm" name="country" placeholder="País"></select> -->
-                  </div>
-                  <div class="col-xs-6 pl-1">
-                    <label>Estado</label>
-                    <input class="form-control form-control-sm" name="state" placeholder="Estado" readonly />
-                    <!-- <select class="form-control form-control-sm" name="state" placeholder="Estado"></select> -->
+            <div class="card-body">
+              <form id="mapsForm">
+                <!-- <div class="form-group">
+                  <div class="row">
+                    <div class="col-xs-6 pr-1">
+                      <label>País</label>
+                      <input class="form-control form-control-sm" name="country" placeholder="País" readonly />
+                    </div>
+                    <div class="col-xs-6 pl-1">
+                      <label>Estado</label>
+                      <input class="form-control form-control-sm" name="state" placeholder="Estado" readonly />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="form-group">
-                <label>Cidade</label>
-                <input class="form-control form-control-sm" name="city" placeholder="Cidade" readonly />
-                <!-- <select class="form-control form-control-sm" name="city" placeholder="Cidade"></select> -->
-              </div>
+                <div class="form-group">
+                  <label>Cidade</label>
+                  <input class="form-control form-control-sm" name="city" placeholder="Cidade" readonly />
+                </div> -->
 
-              <div class="form-group">
-                <label>Logradouro</label>
-                <input type="text" class="form-control form-control-sm" placeholder="Ex.: José de Souza Campos" name="street" />
-              </div>
+                <div class="form-group">
+                  <label>Logradouro</label>
+                  <input type="text" class="form-control form-control-sm" placeholder="Ex.: José de Souza Campos" name="street" readonly />
+                </div>
 
-              <div class="form-group">
-                <label>CEP</label>
-                <input type="text" class="form-control form-control-sm" name="cep" placeholder="Ex.: 13000-000" data-container="body" data-toggle="popover"
-                  data-trigger="focus" data-placement="bottom" data-html="true" data-content="Não sabe seu CEP? Encontre-o <a href='http://www.buscacep.correios.com.br/sistemas/buscacep/' target='_blank'>aqui</a>"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Bairro</label>
-                <div class="input-group">
-                  <input type="text" class="form-control form-control-sm" name="neighborhood" placeholder="Ex.: Centro" disabled="disabled"
+                <div class="form-group">
+                  <label>CEP</label>
+                  <input type="text" class="form-control form-control-sm" name="postal_code" placeholder="Ex.: 13000-000" readonly data-container="body"
+                    data-toggle="popover" data-trigger="focus" data-placement="bottom" data-html="true" data-content="Não sabe seu CEP? Encontre-o <a href='http://www.buscacep.correios.com.br/sistemas/buscacep/' target='_blank'>aqui</a>"
                   />
-                  <span class="input-group-addon" data-toggle="popover" data-placement="bottom" data-container="body" data-trigger="hover"
-                    data-content="Utilize o bairro do Google Maps. Você pode definir um bairro comercial no cadastro do imóvel.">
+                </div>
+
+                <div class="form-group">
+                  <label>Bairro</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" name="neighborhood" placeholder="Ex.: Centro" disabled="disabled"
+                    />
+                    <span class="input-group-addon" data-toggle="popover" data-placement="bottom" data-container="body" data-trigger="hover"
+                      data-content="Utilize o bairro do Google Maps. Você pode definir um bairro comercial no cadastro do imóvel.">
                     <i class="glyphicon glyphicon-question-sign"></i>
                   </span>
+                  </div>
                 </div>
-              </div>
 
-              <input type="hidden" class="form-control form-control-sm" name="lat" placeholder="Latitude" readonly />
-              <input type="hidden" class="form-control form-control-sm" name="lng" placeholder="Longitude" readonly />
+                <div class="form-group">
+                  <label>País, Estado, Cidade</label>
+                  <div class="form-control form-control-sm disabled" id="formatedInputLocation"></div>
+                </div>
 
-              <button type="submit" class="btn btn-primary btn-block mt-3">Salvar</button>
+                <input type="text" class="form-control form-control-sm" name="lat" placeholder="Latitude" readonly />
+                <input type="text" class="form-control form-control-sm" name="lng" placeholder="Longitude" readonly />
 
-            </form>
+                <div class="card-footer form-group">
+                  <button type="button" class="btn btn-primary btn-block btn-lg mt-3" id="mapsFormSubmit">Salvar</button>
+                </div>
+
+              </form>
+            </div>
           </div>
           <div class="card card-maps">
             <div id="mapsLoading" class="maps-loading d-flex align-items-center">

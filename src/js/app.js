@@ -3,6 +3,7 @@
   'use strict';
 
   var $form;
+  var $formSubmitBtn;
   var $modal;
   var map, marker, autocomplete, geocoder;
   var initialData;
@@ -10,6 +11,7 @@
 
   function initMap (formData, callback) {
     $form = doc.getElementById('mapsForm');
+    $formSubmitBtn = doc.getElementById('mapsFormSubmit');
     $modal = $('#mapsModal');
     initialData = formData || {};
 
@@ -68,9 +70,26 @@
           var element = $form.elements[field];
           if (element) {
             $form.elements[field].value = (fields[field] && fields[field] != 'Unnamed Road') ? fields[field] : '';
+          } else {
+            addFormInput(field, fields[field]);
           }
         });
+
+        printBasicLocation();
       }
+    }
+
+    function addFormInput(name, value) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      $form.appendChild(input);
+    }
+
+    function printBasicLocation (fields) {
+        var address = getFormValues();
+        document.getElementById('formatedInputLocation').innerText = address.country + ', ' + address.state + ', ' + address.city;
     }
 
     function getGeocodePosition (pos) {
@@ -82,6 +101,15 @@
           address.lat = pos.lat;
           address.lng = pos.lng;
           updateForm(address);
+
+          if (!address.postal_code) {
+            $form.elements.postal_code.readOnly = false;
+          } else if (!address.street) {
+            $form.elements.street.readOnly = false;
+          } else {
+            $form.elements.street.readOnly = true;
+            $form.elements.postal_code.readOnly = true;
+          }
         }
       });
     }
@@ -236,7 +264,7 @@
 
     function findLocation (address) {
       if (address && address != '') {
-        geocoder.geocode({ 'address': address }, function (results, status) {
+        geocoder.geocode(address, function (results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
             var place = results[0];
             focusMarkerPosition(place);
@@ -317,7 +345,7 @@
       autocomplete.bindTo('bounds', map);
       autocomplete.addListener('place_changed', handleAutocomplete);
 
-      $form.addEventListener('submit', function (e) {
+      $formSubmitBtn.addEventListener('click', function (e) {
         handleSubmit(e, callback);
       });
 
@@ -334,7 +362,12 @@
           address.push(initialData[key]);
         });
 
-        findLocation(address.join(', '));
+        var location = { 'address': address.join(', ') };
+        if (address.lat && address.lng) {
+          location = { 'location': { lat: address.lat, lng: address.lng }};
+        }
+
+        findLocation(location);
       });
     }
   }

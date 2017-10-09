@@ -6,17 +6,37 @@
   top: 15px;
   left: 15px;
   z-index: 100;
-  padding: 20px;
   box-shadow: 0 0 10px #bbb;
+}
+
+.card-form .form-group {
+  padding: 5px 20px;
+  margin: 0;
+}
+
+.card-form .card-header {
+  border-bottom: 1px solid #ccc;
+  padding: 15px 20px;
+}
+
+.card-form .card-footer {
+  padding: 15px 20px;
 }
 
 .card-form .form-control {
   box-shadow: none;
 }
 
+.card-form .form-control.disabled {
+  background-color: #EEEEEE;
+  cursor: default;
+}
+
 .card-form .btn {
-  margin-top: 15px;
+  background-color: #02A2C2;
+  border: none;
   text-transform: uppercase;
+  font-size: 14px;
 }
 
 .card-form .pr-1 {
@@ -52,7 +72,7 @@
   border-color: #dc3545;
 }
 
-.card-form .form-group, .card-form .form-group label {
+.card-form .form-group label {
   margin-bottom: 0;
   margin-top: 5px;
 }
