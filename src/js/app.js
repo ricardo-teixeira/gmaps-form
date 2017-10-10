@@ -13,7 +13,10 @@
     $form = doc.getElementById('mapsForm');
     $formSubmitBtn = doc.getElementById('mapsFormSubmit');
     $modal = $('#mapsModal');
-    initialData = formData || {};
+    initialData = { country: 'Brasil' };
+    if (Object.keys(formData).length > 0) {
+      initialData = formData;
+    }
 
     function Field (props) {
       var defaults = {
@@ -79,7 +82,7 @@
       }
     }
 
-    function addFormInput(name, value) {
+    function addFormInput (name, value) {
       var input = document.createElement('input');
       input.type = 'hidden';
       input.name = name;
@@ -88,8 +91,8 @@
     }
 
     function printBasicLocation (fields) {
-        var address = getFormValues();
-        document.getElementById('formatedInputLocation').innerText = address.country + ', ' + address.state + ', ' + address.city;
+      var address = getFormValues();
+      document.getElementById('formatedInputLocation').innerText = address.country + ', ' + address.state + ', ' + address.city;
     }
 
     function getGeocodePosition (pos) {
@@ -122,7 +125,7 @@
       getGeocodePosition(latLng);
     }
 
-    function cleanFormErrors () {
+    function clearFormErrors () {
       var $errorsText = $form.querySelectorAll('.text-danger');
       var $errorsClass = $form.querySelectorAll('.is-invalid');
 
@@ -148,9 +151,9 @@
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng()
       };
-      
+
       marker.setPosition(pos);
-      
+
       if (place.geometry.viewport) {
         map.fitBounds(place.geometry.viewport);
       } else {
@@ -171,13 +174,17 @@
       return values;
     }
 
-    function validateForm () {
-      cleanFormErrors();
+    function validateRequiredFields (values) {
+      clearFormErrors();
 
-      var formValues = getFormValues();
-      var isValid = Object.keys(formValues).every(function (key) {
-        return !!formValues[key] || !FORM_FIELDS_SCHEMA[key].required;
+      return Object.keys(values).every(function (key) {
+        return !!values[key] || !FORM_FIELDS_SCHEMA[key].required;
       });
+    }
+
+    function validateForm () {
+      var formValues = getFormValues();
+      var isValid = validateRequiredFields(formValues);
 
       return $.Deferred(function () {
         var self = this;
@@ -188,7 +195,7 @@
 
             if (!$field.value && $field.type != 'hidden' && FORM_FIELDS_SCHEMA[key].required) {
               $field.classList.add('is-invalid');
-              $field.parentNode.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Obrigatório</small>');
+              $field.parentNode.insertAdjacentHTML('beforeend', createErrorElement('Obrigatório'));
             }
 
           });
@@ -205,6 +212,10 @@
       });
     }
 
+    function createErrorElement (errorText) {
+      return '<div><small class="text-danger mt-2">' + errorText + '</small></div>';
+    }
+
     function validateAddressAsync (address) {
       return $.Deferred(function () {
         var self = this;
@@ -218,15 +229,15 @@
             var mapsAddress = mapApiToFormFields(results[0]);
 
             if (mapsAddress.street && mapsAddress.street != address.street) {
-              $form.insertAdjacentHTML('afterend', '<small class="text-danger mt-2">Logradouro incorreto</small>')
+              $form.insertAdjacentHTML('afterend', createErrorElement('Logradouro incorreto'));
             }
 
             if (mapsAddress.neighborhood && mapsAddress.neighborhood != address.neighborhood) {
-              $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
+              $form.insertAdjacentHTML('afterend', createErrorElement('Bairro incorreto'));
             }
 
             if (mapsAddress.postal_code && mapsAddress.postal_code != address.postal_code) {
-              $form.insertAdjacentHTML('afterend', '<div class="is-invalid"><small class="text-danger mt-2">Bairro incorreto</small></div>')
+              $form.insertAdjacentHTML('afterend', createErrorElement('Bairro incorreto'));
             }
 
             self.resolve();
@@ -234,7 +245,7 @@
             self.reject();
           }
         });
-      })
+      });
     }
 
     function handleSubmit (e, callback) {
@@ -253,7 +264,7 @@
     }
 
     function handleAutocomplete () {
-      cleanFormErrors();
+      clearFormErrors();
       var place = autocomplete.getPlace();
       if (Object.keys(place).length > 1) {
         var address = mapApiToFormFields(place);
@@ -307,7 +318,39 @@
       }
     }
 
+    function setupInitialValues () {
+      updateForm(initialData);
+      google.maps.event.trigger(map, 'resize');
+
+      if (initialData.lat && initialData.lng) {
+        var pos = {
+          lat: parseFloat(initialData.lat),
+          lng: parseFloat(initialData.lng)
+        };
+        marker.setPosition(pos);
+        map.setCenter(pos);
+        map.setZoom(17);
+      } else {
+        var address = [];
+        Object.keys(initialData).forEach(function (key) {
+          address.push(initialData[key]);
+        });
+
+        findLocation({ 'address': address.join(', ') });
+      }
+    }
+
     /********************************/
+
+    function setMarkerPosition (e) {
+      var pos = {
+        lat: e.latLng.lat(),
+        lng: e.latLng.lng()
+      };
+
+      marker.setPosition(pos);
+      getGeocodePosition(pos);
+    }
 
     if (!isMapsInitialized) {
       isMapsInitialized = true;
@@ -321,22 +364,12 @@
         },
         fullscreenControl: false
       });
-
-      map.addListener('rightclick', function (e) {
-        var pos = {
-          lat: e.latLng.lat(),
-          lng: e.latLng.lng()
-        };
-
-        marker.setPosition(pos);
-        getGeocodePosition(pos);
-      });
-
       marker = new google.maps.Marker({
         map: map,
         draggable: true
       });
 
+      google.maps.event.addListener(map, 'click', setMarkerPosition);
       google.maps.event.addListener(marker, 'dragend', handleMarkerDrag);
       google.maps.event.addListener(map, 'tilesloaded', setLoading);
 
@@ -353,25 +386,7 @@
         FORM_FIELDS_SCHEMA[e.target.name].onChange(e);
       });
 
-      $modal.on('shown.bs.modal', function () {
-        updateForm(initialData);
-        google.maps.event.trigger(map, 'resize');
-
-        if (initialData.lat && initialData.lng) {
-          var pos = { lat: parseFloat(initialData.lat), lng: parseFloat(initialData.lng) };
-          marker.setPosition(pos);
-          map.setCenter(pos);
-          map.setZoom(17);
-        } else {
-          var address = [];
-          Object.keys(initialData).forEach(function (key) {
-            address.push(initialData[key]);
-          });
-
-          findLocation({ 'address': address.join(', ') });
-        }
-
-      });
+      $modal.on('shown.bs.modal', setupInitialValues);
     }
   }
 

@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "babel": "babel --presets env src/js/app.js -o build/app.min.js --source-maps inline",
+    "babel": "babel --presets env src/js/app.js -o build/app.min.js --source-maps",
     "start": "http-server -p 8080",
     "test": "mocha src/test"
   },
