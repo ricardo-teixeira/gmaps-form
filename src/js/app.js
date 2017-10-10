@@ -14,6 +14,7 @@
     $formSubmitBtn = doc.getElementById('mapsFormSubmit');
     $modal = $('#mapsModal');
     initialData = { country: 'Brasil' };
+
     if (Object.keys(formData).length > 0) {
       initialData = formData;
     }
@@ -29,6 +30,7 @@
 
     var FORM_FIELDS_SCHEMA = {
       street: new Field(),
+      number: new Field(),
       country: new Field(),
       state: new Field(),
       city: new Field(),
@@ -42,6 +44,10 @@
       route: {
         value: 'long_name',
         alias: 'street'
+      },
+      street_number: {
+        value: 'long_name',
+        alias: 'number'
       },
       country: {
         value: 'long_name',

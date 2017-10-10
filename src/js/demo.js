@@ -1,6 +1,7 @@
 (function () {
   var $exampleForm = document.getElementById('exampleForm');
-  var $submitResults = document.getElementById('submitResults');
+  var $submitResultsLeft = document.getElementById('submitResultsLeft');
+  var $submitResultsRight = document.getElementById('submitResultsRight');
   var $newAddressBtn = document.getElementById('addNewAddress');
 
   var initialData = {
@@ -20,6 +21,7 @@
 
     mapsAddressFinder(formatted, function (values) {
       applyValuesValues(mapFormValuesToApiProps(values, true));
+      $submitResultsLeft.innerHTML = '<pre><strong>Maps API values</strong>\n' + syntaxHighlight(values) + '</pre>';
     });
 
     $('#mapsModal').modal('show');
@@ -37,7 +39,7 @@
   $exampleForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var values = getFormValues();
-    $submitResults.innerHTML = '<pre>' + syntaxHighlight(values) + '</pre>';
+    $submitResultsRight.innerHTML = '<pre><strong>Submit Values</strong>\n' + syntaxHighlight(values) + '</pre>';
   });
 
   function mapFormValuesToApiProps (values, reverse) {
