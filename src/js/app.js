@@ -78,7 +78,7 @@
         Object.keys(address).forEach(function (field) {
           var element = $form.elements[field];
           if (element) {
-            $form.elements[field].value = (fields[field] && fields[field] != 'Unnamed Road') ? fields[field] : '';
+            $form.elements[field].value = fields[field] || '';
           } else {
             addFormInput(field, fields[field]);
           }
@@ -110,17 +110,24 @@
           address.lat = pos.lat;
           address.lng = pos.lng;
           updateForm(address);
-
-          if (!address.postal_code) {
-            $form.elements.postal_code.readOnly = false;
-          } else if (!address.street) {
-            $form.elements.street.readOnly = false;
-          } else {
-            $form.elements.street.readOnly = true;
-            $form.elements.postal_code.readOnly = true;
-          }
+          enableFields(address);
         }
       });
+    }
+
+    function enableFields (address) {
+      var isValidPostalCode = (!!address.postal_code && validatePostalCode(address.postal_code, address.country));
+      $form.elements.postal_code.readOnly = isValidPostalCode || false;
+      $form.elements.street.readOnly = !!address.street || false;
+    }
+
+    function validatePostalCode (postalCode, country) {
+      switch (country) {
+        case 'Brasil':
+          return postalCode.replace(/\D/, '').length == 8;
+        default:
+          return true;
+      }
     }
 
     function handleMarkerDrag (e) {
@@ -182,10 +189,33 @@
 
     function validateRequiredFields (values) {
       clearFormErrors();
+      var invalidFields = [];
 
-      return Object.keys(values).every(function (key) {
-        return !!values[key] || !FORM_FIELDS_SCHEMA[key].required;
+      Object.keys(values).forEach(function (key) {
+        var $field = $form.elements[key];
+        if ($field.type != 'hidden' && FORM_FIELDS_SCHEMA[key].required) {
+          var valid = true;
+          var error = '';
+
+          if (!$field.value) {
+            valid = false;
+            error = 'Obrigatório';
+          } else if ($field.name == 'postal_code') {
+            if (!validatePostalCode($field.value, values.country)) {
+              valid = false;
+              error = 'Código postal inválido';
+            }
+          }
+
+          if (!valid) {
+            invalidFields.push(key);
+            $field.classList.add('is-invalid');
+            $field.parentNode.insertAdjacentHTML('beforeend', createErrorElement(error));
+          }
+        }
       });
+
+      return invalidFields.length == 0;
     }
 
     function validateForm () {
@@ -196,16 +226,6 @@
         var self = this;
 
         if (!isValid) {
-          Object.keys(formValues).forEach(function (key) {
-            var $field = $form.elements[key];
-
-            if (!$field.value && $field.type != 'hidden' && FORM_FIELDS_SCHEMA[key].required) {
-              $field.classList.add('is-invalid');
-              $field.parentNode.insertAdjacentHTML('beforeend', createErrorElement('Obrigatório'));
-            }
-
-          });
-
           return self.resolve(false);
         }
 
@@ -269,12 +289,13 @@
       });
     }
 
-    function handleAutocomplete () {
+    function handleAutocomplete (autocomplete) {
       clearFormErrors();
       var place = autocomplete.getPlace();
       if (Object.keys(place).length > 1) {
         var address = mapApiToFormFields(place);
         updateForm(address);
+        enableFields(address);
         focusMarkerPosition(place);
       }
     }
@@ -285,6 +306,7 @@
           if (status == google.maps.GeocoderStatus.OK) {
             var place = results[0];
             focusMarkerPosition(place);
+            enableFields(address);
           }
         });
       }
@@ -305,7 +327,7 @@
         });
 
         if (formField) {
-          var value = component[formField.value];
+          var value = (component[formField.value] && component[formField.value] != 'Unnamed Road') ? component[formField.value] : '';
           address[formField.alias] = value;
         }
       });
@@ -324,7 +346,7 @@
       }
     }
 
-    function setupInitialValues () {
+    function initializeValues () {
       updateForm(initialData);
       google.maps.event.trigger(map, 'resize');
 
@@ -345,8 +367,6 @@
         findLocation({ 'address': address.join(', ') });
       }
     }
-
-    /********************************/
 
     function setMarkerPosition (e) {
       var pos = {
@@ -379,10 +399,12 @@
       google.maps.event.addListener(marker, 'dragend', handleMarkerDrag);
       google.maps.event.addListener(map, 'tilesloaded', setLoading);
 
-      var $autocomplete = document.getElementById('mapsAutocomplete');
-      autocomplete = new google.maps.places.Autocomplete($autocomplete, { types: ['geocode'] });
-      autocomplete.bindTo('bounds', map);
-      autocomplete.addListener('place_changed', handleAutocomplete);
+      var $autocompletes = document.querySelectorAll('[data-gmaps="autocomplete"]');
+      $autocompletes.forEach(function (elem) {
+        var autocomplete = new google.maps.places.Autocomplete(elem, { types: ['geocode'] });
+        autocomplete.bindTo('bounds', map);
+        autocomplete.addListener('place_changed', function () { handleAutocomplete(autocomplete); });
+      });
 
       $formSubmitBtn.addEventListener('click', function (e) {
         handleSubmit(e, callback);
@@ -392,7 +414,7 @@
         FORM_FIELDS_SCHEMA[e.target.name].onChange(e);
       });
 
-      $modal.on('shown.bs.modal', setupInitialValues);
+      $modal.on('shown.bs.modal', initializeValues);
     }
   }
 

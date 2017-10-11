@@ -8,8 +8,8 @@
     pais: 'Brasil',
     estado: 'São Paulo',
     cidade: 'Campinas',
-    lat: -22.885093680732655,
-    lng: -47.007358083605936
+    lat: -22.843125677855074,
+    lng: -47.00317025184631
   };
 
   var mappedData = mapFormValuesToApiProps(initialData);
@@ -32,7 +32,8 @@
     var formatted = mapFormValuesToApiProps(data);
 
     mapsAddressFinder(formatted, function (values) {
-      applyValuesValues(mapFormValuesToApiProps(values, true));
+      var formattedResponse = mapFormValuesToApiProps(values, true);
+      applyValuesValues(formattedResponse);
     });
   });
 
