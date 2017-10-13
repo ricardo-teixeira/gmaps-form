@@ -5,7 +5,7 @@
   var $form;
   var $formSubmitBtn;
   var $modal;
-  var map, marker, autocomplete, geocoder;
+  var map, marker, autocomplete, geocoder, infowindow;
   var initialData;
   var isMapsInitialized = false;
 
@@ -106,11 +106,13 @@
         latLng: pos
       }, function (responses) {
         if (responses && responses.length > 0) {
-          var address = mapApiToFormFields(responses[0]);
+          var place = responses[0];
+          var address = mapApiToFormFields(place);
           address.lat = pos.lat;
           address.lng = pos.lng;
           updateForm(address);
           enableFields(address);
+          displayInfoWindow(place);
         }
       });
     }
@@ -297,6 +299,18 @@
         updateForm(address);
         enableFields(address);
         focusMarkerPosition(place);
+        displayInfoWindow(place);
+      }
+    }
+
+    function displayInfoWindow(place) {
+      infowindow.close();
+      if (place.address_components) {
+        var lat = place.geometry.location.lat().toFixed(6);
+        var lng = place.geometry.location.lng().toFixed(6);
+        
+        infowindow.setContent('<div><strong>' + place.formatted_address + '</strong><br>' + lat + ', ' + lng);
+        infowindow.open(map, marker);
       }
     }
 
@@ -347,8 +361,9 @@
     }
 
     function initializeValues () {
-      updateForm(initialData);
       google.maps.event.trigger(map, 'resize');
+      updateForm(initialData);
+      $modal.find('[data-gmaps="autocomplete"]')[0].focus();
 
       if (initialData.lat && initialData.lng) {
         var pos = {
@@ -381,6 +396,7 @@
     if (!isMapsInitialized) {
       isMapsInitialized = true;
 
+      infowindow = new google.maps.InfoWindow();
       geocoder = new google.maps.Geocoder();
       map = new google.maps.Map(doc.getElementById('map'), {
         zoom: 12,
