@@ -2,19 +2,6 @@
 (function (win, doc) {
   'use strict';
 
-  // var script = doc.createElement('script'); 
-  // script.type = 'text/javascript'; 
-  // script.async = true; 
-  // script.src = 'https://widget.intercom.io/widget/r3d6yia4'; 
-  // var x = doc.getElementsByTagName('script')[0];
-  // x.parentNode.insertBefore(s, x);
-
-  // if (w.attachEvent) { 
-  //   w.attachEvent('onload', l);
-  // } else {
-  //   w.addEventListener('load', l, false);
-  // }
-
   var $form;
   var $formSubmitBtn;
   var $modal;
@@ -332,7 +319,7 @@
         var lat = place.geometry.location.lat().toFixed(6);
         var lng = place.geometry.location.lng().toFixed(6);
 
-        infowindow.setContent('<div><strong>' + place.formatted_address.replace('Unnamed Road', 'Sem nome') + '</strong><br>' + lat + ', ' + lng);
+        infowindow.setContent('<div><strong>' + place.formatted_address.replace('Unnamed Road', 'Logradouro sem nome') + '</strong><br>' + lat + ', ' + lng);
         infowindow.open(map, marker);
       }
     }
