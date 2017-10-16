@@ -332,7 +332,7 @@
         var lat = place.geometry.location.lat().toFixed(6);
         var lng = place.geometry.location.lng().toFixed(6);
 
-        infowindow.setContent('<div><strong>' + place.formatted_address + '</strong><br>' + lat + ', ' + lng);
+        infowindow.setContent('<div><strong>' + place.formatted_address.replace('Unnamed Road', 'Sem nome') + '</strong><br>' + lat + ', ' + lng);
         infowindow.open(map, marker);
       }
     }
