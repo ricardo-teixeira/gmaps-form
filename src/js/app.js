@@ -2,6 +2,19 @@
 (function (win, doc) {
   'use strict';
 
+  // var script = doc.createElement('script'); 
+  // script.type = 'text/javascript'; 
+  // script.async = true; 
+  // script.src = 'https://widget.intercom.io/widget/r3d6yia4'; 
+  // var x = doc.getElementsByTagName('script')[0];
+  // x.parentNode.insertBefore(s, x);
+
+  // if (w.attachEvent) { 
+  //   w.attachEvent('onload', l);
+  // } else {
+  //   w.addEventListener('load', l, false);
+  // }
+
   var $form;
   var $formSubmitBtn;
   var $modal;
@@ -10,6 +23,16 @@
   var isMapsInitialized = false;
 
   function initMap (formData, callback) {
+
+    if (!isMapsInitialized && !win.google) {
+      var script = doc.createElement('script');
+      script.onload = function () {
+        initializeMaps();
+      };
+      script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8&libraries=places";
+      doc.getElementsByTagName('head')[0].appendChild(script);
+    }
+
     $form = doc.getElementById('mapsForm');
     $formSubmitBtn = doc.getElementById('mapsFormSubmit');
     $modal = $('#mapsModal');
@@ -303,12 +326,12 @@
       }
     }
 
-    function displayInfoWindow(place) {
+    function displayInfoWindow (place) {
       infowindow.close();
       if (place.address_components) {
         var lat = place.geometry.location.lat().toFixed(6);
         var lng = place.geometry.location.lng().toFixed(6);
-        
+
         infowindow.setContent('<div><strong>' + place.formatted_address + '</strong><br>' + lat + ', ' + lng);
         infowindow.open(map, marker);
       }
@@ -393,9 +416,7 @@
       getGeocodePosition(pos);
     }
 
-    if (!isMapsInitialized) {
-      isMapsInitialized = true;
-
+    function initializeMaps () {
       infowindow = new google.maps.InfoWindow();
       geocoder = new google.maps.Geocoder();
       map = new google.maps.Map(doc.getElementById('map'), {
@@ -412,6 +433,7 @@
       });
 
       google.maps.event.addListener(map, 'click', setMarkerPosition);
+      google.maps.event.addListener(marker, 'dragstart', function (){ infowindow.close(); });
       google.maps.event.addListener(marker, 'dragend', handleMarkerDrag);
       google.maps.event.addListener(map, 'tilesloaded', setLoading);
 
