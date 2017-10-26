@@ -1,5 +1,5 @@
 function Field (props) {
-  var defaults = {
+  const defaults = {
     value: '',
     required: true,
     onChange: function () {}
@@ -9,6 +9,7 @@ function Field (props) {
 
 const FORM_FIELDS_SCHEMA = {
   street: new Field(),
+  number: new Field(),
   country: new Field(),
   state: new Field(),
   city: new Field(),
@@ -18,4 +19,4 @@ const FORM_FIELDS_SCHEMA = {
   lng: new Field()
 };
 
-module.exports = FORM_FIELDS_SCHEMA;
+export { FORM_FIELDS_SCHEMA }

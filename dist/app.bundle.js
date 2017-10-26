@@ -69,52 +69,47 @@
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
   } else if (typeof exports !== "undefined") {
-    factory(require('../modules/formFieldsSchema'));
+    factory();
   } else {
     var mod = {
       exports: {}
     };
-    factory(global.formFieldsSchema);
+    factory();
     global.app = mod.exports;
   }
-})(this, function (schema) {
+})(this, function () {
   'use strict';
 
   (function (win, doc) {
     'use strict';
 
-    var $form;
-    var $formSubmitBtn;
-    var $modal;
-    var map, marker, autocomplete, geocoder;
-    var initialData;
+    var $form, $formSubmitBtn, $modal;
+    var map, marker, autocomplete, geocoder, infowindow, initialData;
     var isMapsInitialized = false;
 
-    function initMap(formData, callback) {
+    function initMap(formData, afterSubmit) {
       $form = doc.getElementById('mapsForm');
-      $formSubmitBtn = doc.getElementById('mapsFormSubmit');
+      $formSubmitBtn = $form.querySelector('#mapsFormSubmit');
       $modal = $('#mapsModal');
-      initialData = { country: 'Brasil' };
-      if (Object.keys(formData).length > 0) {
-        initialData = formData;
-      }
+      initialData = formData || { country: 'Brasil' };
 
-      function Field(props) {
-        var defaults = {
-          value: '',
-          required: true,
-          onChange: function onChange() {}
-        };
-        return Object.assign({}, defaults, props);
+      if (!win.google) {
+        var script = doc.createElement('script');
+        script.onload = initializeMaps;
+        script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8&libraries=places";
+        doc.getElementsByTagName('head')[0].appendChild(script);
+      } else if (!isMapsInitialized) {
+        initializeMaps();
       }
 
       var FORM_FIELDS_SCHEMA = {
         street: new Field(),
+        number: new Field(),
         country: new Field(),
         state: new Field(),
         city: new Field(),
@@ -124,12 +119,14 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         lng: new Field()
       };
 
-      console.log('schema', schema);
-
       var FORM_FIELDS_MAPPER = {
         route: {
           value: 'long_name',
           alias: 'street'
+        },
+        street_number: {
+          value: 'long_name',
+          alias: 'number'
         },
         country: {
           value: 'long_name',
@@ -153,6 +150,15 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         }
       };
 
+      function Field(props) {
+        var defaults = {
+          value: '',
+          required: true,
+          onChange: function onChange() {}
+        };
+        return Object.assign({}, defaults, props);
+      }
+
       function updateForm(fields) {
         if (fields) {
           var address = Object.assign({}, FORM_FIELDS_SCHEMA, fields);
@@ -160,7 +166,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
           Object.keys(address).forEach(function (field) {
             var element = $form.elements[field];
             if (element) {
-              $form.elements[field].value = fields[field] && fields[field] != 'Unnamed Road' ? fields[field] : '';
+              $form.elements[field].value = fields[field] || '';
             } else {
               addFormInput(field, fields[field]);
             }
@@ -188,21 +194,30 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
           latLng: pos
         }, function (responses) {
           if (responses && responses.length > 0) {
-            var address = mapApiToFormFields(responses[0]);
+            var place = responses[0];
+            var address = mapApiToFormFields(place);
             address.lat = pos.lat;
             address.lng = pos.lng;
             updateForm(address);
-
-            if (!address.postal_code) {
-              $form.elements.postal_code.readOnly = false;
-            } else if (!address.street) {
-              $form.elements.street.readOnly = false;
-            } else {
-              $form.elements.street.readOnly = true;
-              $form.elements.postal_code.readOnly = true;
-            }
+            enableFields(address);
+            displayInfoWindow(place);
           }
         });
+      }
+
+      function enableFields(address) {
+        var isValidPostalCode = !!address.postal_code && validatePostalCode(address.postal_code, address.country);
+        $form.elements.postal_code.readOnly = isValidPostalCode || false;
+        $form.elements.street.readOnly = !!address.street || false;
+      }
+
+      function validatePostalCode(postalCode, country) {
+        switch (country) {
+          case 'Brasil':
+            return postalCode.replace(/\D/, '').length == 8;
+          default:
+            return true;
+        }
       }
 
       function handleMarkerDrag(e) {
@@ -264,10 +279,33 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
       function validateRequiredFields(values) {
         clearFormErrors();
+        var invalidFields = [];
 
-        return Object.keys(values).every(function (key) {
-          return !!values[key] || !FORM_FIELDS_SCHEMA[key].required;
+        Object.keys(values).forEach(function (key) {
+          var $field = $form.elements[key];
+          if ($field.type != 'hidden' && FORM_FIELDS_SCHEMA[key].required) {
+            var valid = true;
+            var error = '';
+
+            if (!$field.value) {
+              valid = false;
+              error = 'Obrigatório';
+            } else if ($field.name == 'postal_code') {
+              if (!validatePostalCode($field.value, values.country)) {
+                valid = false;
+                error = 'Código postal inválido';
+              }
+            }
+
+            if (!valid) {
+              invalidFields.push(key);
+              $field.classList.add('is-invalid');
+              $field.parentNode.insertAdjacentHTML('beforeend', createErrorElement(error));
+            }
+          }
         });
+
+        return invalidFields.length == 0;
       }
 
       function validateForm() {
@@ -278,15 +316,6 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
           var self = this;
 
           if (!isValid) {
-            Object.keys(formValues).forEach(function (key) {
-              var $field = $form.elements[key];
-
-              if (!$field.value && $field.type != 'hidden' && FORM_FIELDS_SCHEMA[key].required) {
-                $field.classList.add('is-invalid');
-                $field.parentNode.insertAdjacentHTML('beforeend', createErrorElement('Obrigatório'));
-              }
-            });
-
             return self.resolve(false);
           }
 
@@ -349,13 +378,26 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         });
       }
 
-      function handleAutocomplete() {
+      function handleAutocomplete(autocomplete) {
         clearFormErrors();
         var place = autocomplete.getPlace();
         if (Object.keys(place).length > 1) {
           var address = mapApiToFormFields(place);
           updateForm(address);
+          enableFields(address);
           focusMarkerPosition(place);
+          displayInfoWindow(place);
+        }
+      }
+
+      function displayInfoWindow(place) {
+        infowindow.close();
+        if (place.address_components) {
+          var lat = place.geometry.location.lat().toFixed(6);
+          var lng = place.geometry.location.lng().toFixed(6);
+
+          infowindow.setContent('<div><strong>' + place.formatted_address.replace('Unnamed Road', 'Logradouro sem nome') + '</strong><br>' + lat + ', ' + lng);
+          infowindow.open(map, marker);
         }
       }
 
@@ -365,6 +407,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             if (status == google.maps.GeocoderStatus.OK) {
               var place = results[0];
               focusMarkerPosition(place);
+              enableFields(address);
             }
           });
         }
@@ -385,7 +428,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
           });
 
           if (formField) {
-            var value = component[formField.value];
+            var value = component[formField.value] && component[formField.value] != 'Unnamed Road' ? component[formField.value] : '';
             address[formField.alias] = value;
           }
         });
@@ -404,9 +447,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         }
       }
 
-      function setupInitialValues() {
-        updateForm(initialData);
+      function initializeValues() {
         google.maps.event.trigger(map, 'resize');
+        updateForm(initialData);
+        $modal.find('[data-gmaps="autocomplete"]')[0].focus();
 
         if (initialData.lat && initialData.lng) {
           var pos = {
@@ -426,8 +470,6 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         }
       }
 
-      /********************************/
-
       function setMarkerPosition(e) {
         var pos = {
           lat: e.latLng.lat(),
@@ -438,9 +480,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         getGeocodePosition(pos);
       }
 
-      if (!isMapsInitialized) {
-        isMapsInitialized = true;
-
+      function initializeMaps() {
+        infowindow = new google.maps.InfoWindow();
         geocoder = new google.maps.Geocoder();
         map = new google.maps.Map(doc.getElementById('map'), {
           zoom: 12,
@@ -455,24 +496,32 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
           draggable: true
         });
 
+        var $autocompletes = doc.querySelectorAll('[data-gmaps="autocomplete"]');
+
+        $autocompletes.forEach(function (elem) {
+          var autocomplete = new google.maps.places.Autocomplete(elem, { types: ['geocode'] });
+          autocomplete.bindTo('bounds', map);
+          autocomplete.addListener('place_changed', function () {
+            handleAutocomplete(autocomplete);
+          });
+        });
+
         google.maps.event.addListener(map, 'click', setMarkerPosition);
+        google.maps.event.addListener(marker, 'dragstart', function () {
+          infowindow.close();
+        });
         google.maps.event.addListener(marker, 'dragend', handleMarkerDrag);
         google.maps.event.addListener(map, 'tilesloaded', setLoading);
 
-        var $autocomplete = document.getElementById('mapsAutocomplete');
-        autocomplete = new google.maps.places.Autocomplete($autocomplete, { types: ['geocode'] });
-        autocomplete.bindTo('bounds', map);
-        autocomplete.addListener('place_changed', handleAutocomplete);
-
         $formSubmitBtn.addEventListener('click', function (e) {
-          handleSubmit(e, callback);
+          handleSubmit(e, afterSubmit);
         });
 
         $form.addEventListener('change', function (e) {
           FORM_FIELDS_SCHEMA[e.target.name].onChange(e);
         });
 
-        $modal.on('shown.bs.modal', setupInitialValues);
+        $modal.on('shown.bs.modal', initializeValues);
       }
     }
 
@@ -480,51 +529,5 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   })(window, document);
 });
 
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
-  if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else if (typeof exports !== "undefined") {
-    factory(module);
-  } else {
-    var mod = {
-      exports: {}
-    };
-    factory(mod);
-    global.formFieldsSchema = mod.exports;
-  }
-})(this, function (module) {
-  'use strict';
-
-  function Field(props) {
-    var defaults = {
-      value: '',
-      required: true,
-      onChange: function onChange() {}
-    };
-    return Object.assign({}, defaults, props);
-  }
-
-  var FORM_FIELDS_SCHEMA = {
-    street: new Field(),
-    country: new Field(),
-    state: new Field(),
-    city: new Field(),
-    neighborhood: new Field({ required: false }),
-    postal_code: new Field(),
-    lat: new Field(),
-    lng: new Field()
-  };
-
-  module.exports = FORM_FIELDS_SCHEMA;
-});
-
 /***/ })
 /******/ ]);
-//# sourceMappingURL=app.min.js.map

@@ -5,19 +5,25 @@
   "main": "server.js",
   "scripts": {
     "babel": "babel --presets env src/js/app.js -o build/app.min.js --source-maps",
-    "start": "http-server -p 8080",
-    "test": "mocha src/test"
+    "start": "watch-http-server ./ -p 8080",
+    "test": "mocha src/test",
+    "webpack": "webpack --progress --colors -p --watch",
+    "dev": "node_modules/.bin/webpack-dev-server --progress --colors --inline --hot"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",
     "chai": "^4.1.2",
     "http-server": "^0.10.0",
     "jsdom": "^11.3.0",
-    "mocha": "^4.0.1"
+    "mocha": "^4.0.1",
+    "watch-http-server": "^0.7.6",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.3"
   },
   "dependencies": {}
 }

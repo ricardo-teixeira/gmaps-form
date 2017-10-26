@@ -1,18 +1,23 @@
-var FORM_FIELDS_SCHEMA = require('../modules/formFieldsSchema');
+import FORM_FIELDS_SCHEMA from './formFieldsSchema'
+import { printBasicLocation } from './printBasicLocation'
+import { addFormInput } from './addFormInput'
+import { form } from './selectors'
 
-function updateForm (form, fields) {
+function updateForm (fields) {
   if (fields) {
-    var address = Object.assign({}, FORM_FIELDS_SCHEMA, fields);
+    const address = Object.assign({}, FORM_FIELDS_SCHEMA, fields);
 
     Object.keys(address).forEach(function (field) {
-      var element = form.elements[field];
+      const element = form.elements[field];
       if (element) {
-        form.elements[field].value = (fields[field] && fields[field] != 'Unnamed Road') ? fields[field] : '';
+        form.elements[field].value = fields[field] || '';
+      } else {
+        addFormInput(field, fields[field]);
       }
     });
 
-    return fields;
+    printBasicLocation();
   }
 }
 
-module.exports = updateForm;
+export { updateForm };
