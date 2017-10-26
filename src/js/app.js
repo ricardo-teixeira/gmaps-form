@@ -2,40 +2,23 @@
 (function (win, doc) {
   'use strict';
 
-  var $form;
-  var $formSubmitBtn;
-  var $modal;
-  var map, marker, autocomplete, geocoder, infowindow;
-  var initialData;
+  var $form, $formSubmitBtn, $modal;
+  var map, marker, autocomplete, geocoder, infowindow, initialData;
   var isMapsInitialized = false;
 
-  function initMap (formData, callback) {
+  function initMap (formData, afterSubmit) {
+    $form = doc.getElementById('mapsForm');
+    $formSubmitBtn = $form.querySelector('#mapsFormSubmit');
+    $modal = $('#mapsModal');
+    initialData = formData || { country: 'Brasil' };
 
-    if (!isMapsInitialized && !win.google) {
+    if (!win.google) {
       var script = doc.createElement('script');
-      script.onload = function () {
-        initializeMaps();
-      };
+      script.onload = initializeMaps
       script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8&libraries=places";
       doc.getElementsByTagName('head')[0].appendChild(script);
-    }
-
-    $form = doc.getElementById('mapsForm');
-    $formSubmitBtn = doc.getElementById('mapsFormSubmit');
-    $modal = $('#mapsModal');
-    initialData = { country: 'Brasil' };
-
-    if (Object.keys(formData).length > 0) {
-      initialData = formData;
-    }
-
-    function Field (props) {
-      var defaults = {
-        value: '',
-        required: true,
-        onChange: function () {}
-      };
-      return Object.assign({}, defaults, props);
+    } else if (!isMapsInitialized) {
+      initializeMaps();
     }
 
     var FORM_FIELDS_SCHEMA = {
@@ -80,6 +63,15 @@
         alias: 'postal_code'
       }
     };
+
+    function Field (props) {
+      var defaults = {
+        value: '',
+        required: true,
+        onChange: function () { }
+      };
+      return Object.assign({}, defaults, props);
+    }
 
     function updateForm (fields) {
       if (fields) {
@@ -419,20 +411,21 @@
         draggable: true
       });
 
-      google.maps.event.addListener(map, 'click', setMarkerPosition);
-      google.maps.event.addListener(marker, 'dragstart', function (){ infowindow.close(); });
-      google.maps.event.addListener(marker, 'dragend', handleMarkerDrag);
-      google.maps.event.addListener(map, 'tilesloaded', setLoading);
+      var $autocompletes = doc.querySelectorAll('[data-gmaps="autocomplete"]');
 
-      var $autocompletes = document.querySelectorAll('[data-gmaps="autocomplete"]');
       $autocompletes.forEach(function (elem) {
         var autocomplete = new google.maps.places.Autocomplete(elem, { types: ['geocode'] });
         autocomplete.bindTo('bounds', map);
         autocomplete.addListener('place_changed', function () { handleAutocomplete(autocomplete); });
       });
 
+      google.maps.event.addListener(map, 'click', setMarkerPosition);
+      google.maps.event.addListener(marker, 'dragstart', function () { infowindow.close(); });
+      google.maps.event.addListener(marker, 'dragend', handleMarkerDrag);
+      google.maps.event.addListener(map, 'tilesloaded', setLoading);
+
       $formSubmitBtn.addEventListener('click', function (e) {
-        handleSubmit(e, callback);
+        handleSubmit(e, afterSubmit);
       });
 
       $form.addEventListener('change', function (e) {
