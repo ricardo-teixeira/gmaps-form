@@ -1,5 +1,6 @@
 const displayLoading = (show) => {
-  var $loading = document.getElementById('mapsLoading');
+  let $loading = document.getElementById('mapsLoading');
+  
   if ($loading) {
     if (!show) {
       $loading.style.display = 'none';
@@ -7,6 +8,6 @@ const displayLoading = (show) => {
       $loading.style.display = 'block';
     }
   }
-}
+};
 
-export { displayLoading }
+export { displayLoading };

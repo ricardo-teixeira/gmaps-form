@@ -27,6 +27,6 @@ const FORM_FIELDS_MAPPER = {
     value: 'long_name',
     alias: 'postal_code'
   }
-}
+};
 
-export { FORM_FIELDS_MAPPER }
+export { FORM_FIELDS_MAPPER };

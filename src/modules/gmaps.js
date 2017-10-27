@@ -14,7 +14,7 @@ const markerConfig = (map) => ({
 
 const triggerMapEvent = (googleApi, mapInstance) =>
   (event) =>
-    googleApi.maps.event.trigger(mapInstance, event)
+    googleApi.maps.event.trigger(mapInstance, event);
 
 const addEventListenerGenerator = (event, instance) =>
   (eventName, callback) =>
@@ -26,27 +26,28 @@ const addAutocompleteEventListeners = (googleApi, mapInstance) =>
       const autocomplete = new googleApi.maps.places.Autocomplete(elem, { types: ['geocode'] });
       autocomplete.bindTo('bounds', mapInstance);
       autocomplete.addListener('place_changed', () => callback(autocomplete));
-    })
-  }
+    });
+  };
 
 const findLocationByAddress = (geocoder) =>
   (address, callback) => {
     if (address && address != '') {
       geocoder.geocode({ address }, (results, status) => {
-        callback(results, status)
+        callback(results, status);
       });
     }
-  }
+  };
 
 const getGeocodePosition = (geocoder, infoWindow, map, marker) =>
   (pos, callback) => {
     geocoder.geocode({
       latLng: pos
     }, (responses) => {
-      callback(responses, pos, infoWindow)
-      displayInfoWindow(infoWindow, map, marker)(responses[0])
+      callback(responses, pos, infoWindow);
+      displayInfoWindow(infoWindow, map, marker)(responses[0]);
+      console.log(responses[0])
     });
-  }
+  };
 
 const displayInfoWindow = (infoWindow, map, marker) =>
   (place) => {
@@ -55,7 +56,8 @@ const displayInfoWindow = (infoWindow, map, marker) =>
       const lat = place.geometry.location.lat().toFixed(6);
       const lng = place.geometry.location.lng().toFixed(6);
 
-      infoWindow.setContent('<div><strong>' + place.formatted_address.replace('Unnamed Road', 'Logradouro sem nome') + '</strong><br>' + lat + ', ' + lng);
+      const address = place.formatted_address.replace('Unnamed Road', 'Logradouro sem nome');
+      infoWindow.setContent(`<div><strong> ${address}</strong><br>${lat}, ${lng}`);
       infoWindow.open(map, marker);
     }
   };
@@ -67,11 +69,11 @@ const resetMapPosition = (map, marker) =>
     if (zoom) {
       map.setZoom(19);
     }
-  }
+  };
 
 const focusMarkerPosition = (map, marker) =>
   (place) => {
-    var pos = {
+    let pos = {
       lat: place.geometry.location.lat(),
       lng: place.geometry.location.lng()
     };
@@ -84,10 +86,10 @@ const focusMarkerPosition = (map, marker) =>
       map.setCenter(pos);
       map.setZoom(17);
     }
-  }
+  };
 
-const gmaps = (document, googleApi) => {
-  const map = new googleApi.maps.Map(document.getElementById('map'), mapConfig(googleApi));
+const gmaps = (selector, googleApi) => {
+  const map = new googleApi.maps.Map(selector, mapConfig(googleApi));
   const marker = new googleApi.maps.Marker(markerConfig(map));
   const geocoder = new googleApi.maps.Geocoder();
   const infoWindow = new googleApi.maps.InfoWindow();
@@ -106,6 +108,6 @@ const gmaps = (document, googleApi) => {
     addMapEventListener: addEventListenerGenerator(googleApi.maps.event, map),
     addMarkerEventListener: addEventListenerGenerator(googleApi.maps.event, marker),
   };
-}
+};
 
-export { gmaps }
+export { gmaps };

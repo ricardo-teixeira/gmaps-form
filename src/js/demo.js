@@ -1,9 +1,9 @@
-var $exampleForm = document.getElementById('exampleForm');
-var $submitResultsLeft = document.getElementById('submitResultsLeft');
-var $submitResultsRight = document.getElementById('submitResultsRight');
-var $newAddressBtn = document.getElementById('addNewAddress');
+let $exampleForm = document.getElementById('exampleForm');
+let $submitResultsLeft = document.getElementById('submitResultsLeft');
+let $submitResultsRight = document.getElementById('submitResultsRight');
+let $newAddressBtn = document.getElementById('addNewAddress');
 
-var initialData = {
+let initialData = {
   pais: 'Brasil',
   estado: 'São Paulo',
   cidade: 'Campinas',
@@ -11,12 +11,12 @@ var initialData = {
   lng: -47.00317025184631
 };
 
-var mappedData = mapFormValuesToApiProps(initialData);
+let mappedData = mapFormValuesToApiProps(initialData);
 applyValuesValues(initialData);
 
 document.addEventListener('DOMContentLoaded', function () {
-  var data = getFormValues();
-  var formatted = mapFormValuesToApiProps(data);
+  let data = getFormValues();
+  let formatted = mapFormValuesToApiProps(data);
 
   mapsAddressFinder(formatted, function (values) {
     applyValuesValues(mapFormValuesToApiProps(values, true));
@@ -27,24 +27,24 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 $newAddressBtn.addEventListener('click', function () {
-  var data = getFormValues();
-  var formatted = mapFormValuesToApiProps(data);
+  let data = getFormValues();
+  let formatted = mapFormValuesToApiProps(data);
 
   mapsAddressFinder(formatted, function (values) {
-    var formattedResponse = mapFormValuesToApiProps(values, true);
+    let formattedResponse = mapFormValuesToApiProps(values, true);
     applyValuesValues(formattedResponse);
   });
 });
 
 $exampleForm.addEventListener('submit', function (e) {
   e.preventDefault();
-  var values = getFormValues();
+  let values = getFormValues();
   $submitResultsRight.innerHTML = '<pre><strong>Submit Values</strong>\n' + syntaxHighlight(values) + '</pre>';
 });
 
 function mapFormValuesToApiProps (values, reverse) {
-  var mappedObj = {};
-  var keyMap = {
+  let mappedObj = {};
+  let keyMap = {
     pais: 'country',
     estado: 'state',
     cidade: 'city',
@@ -95,7 +95,7 @@ function syntaxHighlight (json) {
   }
   json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-    var cls = 'number';
+    let cls = 'number';
     if (/^"/.test(match)) {
       if (/:$/.test(match)) {
         cls = 'key';

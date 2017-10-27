@@ -1,7 +1,7 @@
-import FORM_FIELDS_SCHEMA from './formFieldsSchema'
-import { printBasicLocation } from './printBasicLocation'
-import { addFormInput } from './addFormInput'
-import { form } from './selectors'
+import FORM_FIELDS_SCHEMA from './formFieldsSchema';
+import { printBasicLocation } from './printBasicLocation';
+import { addFormInput } from './addFormInput';
+import { form } from './selectors';
 
 const updateForm = (fields) => {
   if (fields) {
@@ -18,6 +18,6 @@ const updateForm = (fields) => {
 
     printBasicLocation();
   }
-}
+};
 
 export { updateForm };

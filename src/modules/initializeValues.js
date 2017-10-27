@@ -1,6 +1,6 @@
-import { modal } from './selectors'
-import { updateForm } from './updateForm'
-import { enableFields } from './enableFields'
+import { modal } from './selectors';
+import { updateForm } from './updateForm';
+import { enableFields } from './enableFields';
 
 const initializeValues = (gmapsInstance, initialData) => {
   gmapsInstance.triggerMapEvent('resize');
@@ -25,13 +25,13 @@ const initializeValues = (gmapsInstance, initialData) => {
     });
 
     gmapsInstance.findLocationByAddress(address.join(', '), (results, status) => {
-      if (status == "OK") {
+      if (status == 'OK') {
         const place = results[0];
         focusMarkerPosition(place);
         enableFields(address);
       }
     });
   }
-}
+};
 
-export { initializeValues }
+export { initializeValues };

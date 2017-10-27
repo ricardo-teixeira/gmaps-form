@@ -1,4 +1,4 @@
-import { Field } from './field'
+import { Field } from './field';
 
 const FORM_FIELDS_SCHEMA = {
   street: new Field(),
@@ -12,4 +12,4 @@ const FORM_FIELDS_SCHEMA = {
   lng: new Field()
 };
 
-export { FORM_FIELDS_SCHEMA }
+export { FORM_FIELDS_SCHEMA };

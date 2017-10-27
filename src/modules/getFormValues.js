@@ -1,7 +1,7 @@
-import { form } from './selectors'
+import { form } from './selectors';
 
 const getFormValues = () => {
-  var values = {};
+  let values = {};
 
   Array.prototype.forEach.call(form.elements, function (element) {
     if (element.name) {
@@ -10,6 +10,6 @@ const getFormValues = () => {
   });
 
   return values;
-}
+};
 
-export { getFormValues }
+export { getFormValues };

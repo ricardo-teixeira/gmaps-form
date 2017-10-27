@@ -1,4 +1,4 @@
-import { form } from './selectors'
+import { form } from './selectors';
 
 const clearFormErrors = () => {
   const $errorsText = form.querySelectorAll('.text-danger');
@@ -11,6 +11,6 @@ const clearFormErrors = () => {
   $errorsClass.forEach(function (error) {
     error.classList.remove('is-invalid');
   });
-}
+};
 
-export { clearFormErrors }
+export { clearFormErrors };

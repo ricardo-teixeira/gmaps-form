@@ -6,6 +6,6 @@ const Field = (props) => {
   };
 
   return Object.assign({}, defaults, props);
-}
+};
 
 export { Field };

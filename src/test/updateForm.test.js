@@ -1,12 +1,12 @@
 (function () {
   'use strict';
 
-  var $form;
-  var jsdom = require('jsdom');
-  var dom = new jsdom.JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+  let $form;
+  let jsdom = require('jsdom');
+  let dom = new jsdom.JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
   global.document = dom.window.document;
-  var expect = require('chai').expect;
-  var updateForm = require('../modules/updateForm');
+  let expect = require('chai').expect;
+  let updateForm = require('../modules/updateForm');
 
   describe('Testing update form values', function () {
 
@@ -19,13 +19,13 @@
     });
 
     it('Should return an merged object', function () {
-      var data = {
+      let data = {
         country: 'Brasil',
         state: 'São Paulo',
         city: 'Campinas'
       };
 
-      var result = updateForm($form, data);
+      let result = updateForm($form, data);
 
       expect(result).to.be.equal(data);
     });

@@ -1,12 +1,12 @@
-import { FORM_FIELDS_MAPPER } from './formFieldsMapper'
+import { FORM_FIELDS_MAPPER } from './formFieldsMapper';
 
 const mapApiToFormFields = (place) => {
-  var address = {};
+  let address = {};
   address.lat = place.geometry.location.lat();
   address.lng = place.geometry.location.lng();
 
   place.address_components.forEach(function (component) {
-    var formField;
+    let formField;
 
     component.types.forEach(function (type) {
       if (FORM_FIELDS_MAPPER[type]) {
@@ -15,12 +15,13 @@ const mapApiToFormFields = (place) => {
     });
 
     if (formField) {
-      var value = (component[formField.value] && component[formField.value] != 'Unnamed Road') ? component[formField.value] : '';
+      const componentValue = component[formField.value];
+      const value = (componentValue && componentValue != 'Unnamed Road') ? componentValue : '';
       address[formField.alias] = value;
     }
   });
 
   return address;
-}
+};
 
-export { mapApiToFormFields }
+export { mapApiToFormFields };
