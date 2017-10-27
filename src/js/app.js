@@ -22,7 +22,7 @@ import {
 (function (win, doc) {
   'use strict';
 
-  var map, marker, autocomplete, geocoder, initialData;
+  var geocoder, initialData;
   var isMapsInitialized = false;
 
   function initMap (formData, afterSubmit) {
@@ -48,7 +48,7 @@ import {
       }
     }
 
-    function handleMarkerDrag (e, gmapsInstance) {
+    const handleMarkerDrag = (e, gmapsInstance) => {
       var latLng = {
         lat: e.latLng.lat(),
         lng: e.latLng.lng()
@@ -57,7 +57,7 @@ import {
       gmapsInstance.getGeocodePosition(latLng, handleGeocodePosition);
     }
 
-    function validateForm () {
+    const validateForm = () => {
       var formValues = getFormValues();
       var isValid = validateRequiredFields(formValues);
 
@@ -77,7 +77,7 @@ import {
       });
     }
 
-    function validateAddressAsync (address) {
+    const validateAddressAsync = (address) => {
       return $.Deferred(function () {
         var self = this;
         var latLng = {
@@ -109,7 +109,7 @@ import {
       });
     }
 
-    function handleSubmit (e, callback) {
+    const handleSubmit = (e, callback) => {
       e.preventDefault();
       validateForm().then(function (valid) {
         if (valid) {
@@ -124,7 +124,7 @@ import {
       });
     }
 
-    function handleAutocomplete (autocomplete) {
+    const handleAutocomplete = (autocomplete) => {
       var place = autocomplete.getPlace();
 
       clearFormErrors();
@@ -136,7 +136,7 @@ import {
       }
     }
 
-    function setMarkerPosition (e, gmapsInstance) {
+    const setMarkerPosition = (e, gmapsInstance) => {
       var pos = {
         lat: e.latLng.lat(),
         lng: e.latLng.lng()

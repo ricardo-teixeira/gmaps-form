@@ -3,7 +3,7 @@ import { printBasicLocation } from './printBasicLocation'
 import { addFormInput } from './addFormInput'
 import { form } from './selectors'
 
-function updateForm (fields) {
+const updateForm = (fields) => {
   if (fields) {
     const address = Object.assign({}, FORM_FIELDS_SCHEMA, fields);
 

@@ -1,6 +1,6 @@
 import { form } from './selectors'
 
-function getFormValues () {
+const getFormValues = () => {
   var values = {};
 
   Array.prototype.forEach.call(form.elements, function (element) {

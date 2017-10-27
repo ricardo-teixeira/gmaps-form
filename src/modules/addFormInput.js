@@ -1,6 +1,6 @@
 import { form } from './selectors'
 
-function addFormInput (name, value) {
+const addFormInput = (name, value) => {
   var input = document.createElement('input');
   input.type = 'hidden';
   input.name = name;

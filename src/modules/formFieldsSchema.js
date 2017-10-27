@@ -1,11 +1,4 @@
-function Field (props) {
-  const defaults = {
-    value: '',
-    required: true,
-    onChange: function () {}
-  };
-  return Object.assign({}, defaults, props);
-}
+import { Field } from './field'
 
 const FORM_FIELDS_SCHEMA = {
   street: new Field(),

@@ -8,16 +8,19 @@
     "start": "watch-http-server ./ -p 8080",
     "test": "mocha src/test",
     "webpack": "webpack --progress --colors -p --watch",
-    "dev": "node_modules/.bin/webpack-dev-server --progress --colors --inline --hot"
+    "dev": "node_modules/.bin/webpack-dev-server --progress --colors --inline --hot",
+    "eslint": "./node_modules/.bin/eslint ./src"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
+    "babel-eslint": "^8.0.1",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",
     "chai": "^4.1.2",
+    "eslint": "^4.9.0",
     "http-server": "^0.10.0",
     "jsdom": "^11.3.0",
     "mocha": "^4.0.1",

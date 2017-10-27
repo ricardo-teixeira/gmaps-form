@@ -185,3 +185,7 @@
 .pac-container {
   z-index: 1200;
 }
+
+.gm-style .gm-style-iw {
+  max-width: 300px;
+}

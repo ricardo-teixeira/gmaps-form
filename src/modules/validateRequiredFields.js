@@ -1,8 +1,8 @@
-import { form } from './selectors'
+import { FORM_FIELDS_SCHEMA } from './formFieldsSchema'
 import { clearFormErrors } from './clearFormErrors'
 import { createErrorElement } from './createErrorElement'
 import { validatePostalCode } from './validatePostalCode'
-import { FORM_FIELDS_SCHEMA } from './formFieldsSchema'
+import { form } from './selectors'
 
 const validateRequiredFields = (values) => {
   clearFormErrors();
