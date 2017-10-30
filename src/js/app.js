@@ -1,4 +1,3 @@
-
 import {
   FORM_FIELDS_SCHEMA,
   gmaps,
@@ -20,16 +19,17 @@ import {
 (function (win, doc, $) {
   'use strict';
 
-  let geocoder, initialData;
+  let geocoder;
   let isMapsInitialized = false;
 
-  function initMap (formData, afterSubmit) {
-    initialData = formData || { country: 'Brasil' };
+  function initMap (apiKey, formData, afterSubmit) {
+    const initialData = formData || { country: 'Brasil' };
 
     if (!win.google) {
-      let script = doc.createElement('script');
+      const script = doc.createElement('script');
+
       script.onload = initializeMaps;
-      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8&libraries=places';
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       doc.getElementsByTagName('head')[0].appendChild(script);
     } else if (!isMapsInitialized) {
       initializeMaps();
@@ -46,18 +46,18 @@ import {
       }
     };
 
-    const handleMarkerDrag = (e, gmapsInstance) => {
-      let latLng = {
-        lat: e.latLng.lat(),
-        lng: e.latLng.lng()
+    const handleMarkerDrag = (event, gmapsInstance) => {
+      const latLng = {
+        lat: event.latLng.lat(),
+        lng: event.latLng.lng()
       };
 
       gmapsInstance.getGeocodePosition(latLng, handleGeocodePosition);
     };
 
     const validateForm = () => {
-      let formValues = getFormValues();
-      let isValid = validateRequiredFields(formValues);
+      const formValues = getFormValues();
+      const isValid = validateRequiredFields(formValues);
 
       return $.Deferred(function () {
         let self = this;
@@ -76,8 +76,8 @@ import {
     };
 
     const validateAddressAsync = (address) => $.Deferred(function () {
-      let self = this;
-      let latLng = {
+      const self = this;
+      const latLng = {
         lat: parseFloat(address.lat),
         lng: parseFloat(address.lng)
       };
@@ -146,6 +146,8 @@ import {
       const $map = doc.getElementById('map');
       const gmapsInstance = gmaps($map, win.google);
 
+      displayLoading(true);
+
       gmapsInstance.addMapEventListener('click', (e) => setMarkerPosition(e, gmapsInstance));
       gmapsInstance.addMapEventListener('tilesloaded', () => displayLoading(false));
       gmapsInstance.addMarkerEventListener('dragstart', () => gmapsInstance.infoWindow.close());
@@ -167,6 +169,6 @@ import {
     }
   }
 
-  win.mapsAddressFinder = initMap;
+  win.findGoogleAddress = initMap;
 
 })(window, document, jQuery);

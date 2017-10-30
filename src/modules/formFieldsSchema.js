@@ -6,7 +6,7 @@ const FORM_FIELDS_SCHEMA = {
   country: new Field(),
   state: new Field(),
   city: new Field(),
-  neighborhood: new Field({ required: false }),
+  neighborhood: new Field(),
   postal_code: new Field(),
   lat: new Field(),
   lng: new Field()

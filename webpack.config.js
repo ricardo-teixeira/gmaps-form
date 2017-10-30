@@ -1,10 +1,12 @@
-const path = require('path')
-const webpack = require('webpack')
+const path = require('path');
+const webpack = require('webpack');
 
-const BUILD = './build'
+const BUILD = './build';
+// const DEVTOOL = 'source-map';
+const DEVTOOL = 'eval-source-map';
 
 module.exports = {
-  devtool: 'source-map',
+  devtool: DEVTOOL,
   entry: {
     app: './src/js/app.js'
   },
@@ -32,4 +34,4 @@ module.exports = {
     watchContentBase: true,
     clientLogLevel: 'error'
   }
-}
+};

@@ -11,6 +11,8 @@ let initialData = {
   lng: -47.00317025184631
 };
 
+const API_KEY = 'AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8';
+
 let mappedData = mapFormValuesToApiProps(initialData);
 applyValuesValues(initialData);
 
@@ -18,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let data = getFormValues();
   let formatted = mapFormValuesToApiProps(data);
 
-  mapsAddressFinder(formatted, function (values) {
+  findGoogleAddress(API_KEY, formatted, function (values) {
     applyValuesValues(mapFormValuesToApiProps(values, true));
     $submitResultsLeft.innerHTML = '<pre><strong>Maps API values</strong>\n' + syntaxHighlight(values) + '</pre>';
   });
@@ -30,7 +32,7 @@ $newAddressBtn.addEventListener('click', function () {
   let data = getFormValues();
   let formatted = mapFormValuesToApiProps(data);
 
-  mapsAddressFinder(formatted, function (values) {
+  findGoogleAddress(API_KEY, formatted, function (values) {
     let formattedResponse = mapFormValuesToApiProps(values, true);
     applyValuesValues(formattedResponse);
   });

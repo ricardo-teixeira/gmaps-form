@@ -1,36 +1,36 @@
 import { FORM_FIELDS_SCHEMA } from './formFieldsSchema';
-import { clearFormErrors } from './clearFormErrors';
-import { createErrorElement } from './createErrorElement';
 import { validatePostalCode } from './validatePostalCode';
+import { showFormErrors } from './showFormErrors';
 import { form } from './selectors';
 
-const validateRequiredFields = (values) => {
-  clearFormErrors();
-  let invalidFields = [];
+const validateRequiredFields = (formValues) => {
+  const invalidFields = [];
 
-  Object.keys(values).forEach(function (key) {
-    let $field = form.elements[key];
-    if ($field.type != 'hidden' && FORM_FIELDS_SCHEMA[key].required) {
+  Object.keys(formValues).forEach(function (name) {
+    const $field = form.elements[name];
+
+    if ($field.type != 'hidden' && FORM_FIELDS_SCHEMA[name].required) {
+      const value = $field.value;
       let valid = true;
       let error = '';
 
-      if (!$field.value) {
+      if (!value) {
         valid = false;
         error = 'Obrigatório';
-      } else if ($field.name == 'postal_code') {
-        if (!validatePostalCode($field.value, values.country)) {
+      } else if (name == 'postal_code') {
+        if (!validatePostalCode(value, formValues.country)) {
           valid = false;
           error = 'Código postal inválido';
         }
       }
 
       if (!valid) {
-        invalidFields.push(key);
-        $field.classList.add('is-invalid');
-        $field.parentNode.insertAdjacentHTML('beforeend', createErrorElement(error));
+        invalidFields.push({name, error});
       }
     }
   });
+
+  showFormErrors(invalidFields);
 
   return invalidFields.length == 0;
 };
