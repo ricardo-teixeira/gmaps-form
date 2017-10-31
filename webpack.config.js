@@ -1,14 +1,14 @@
 const path = require('path');
 const webpack = require('webpack');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-const BUILD = './build';
+const BUILD = './dist';
 const FLAG = process.env.npm_lifecycle_event;
 
 let ENVIRONMENT = 'development';
 let DEVTOOL = 'eval-source-map';
 
 if (FLAG === 'prod') {
-  // const DEVTOOL = 'source-map';
   DEVTOOL = '#cheap-module-source-map';
   ENVIRONMENT = 'production';
 }
@@ -30,6 +30,10 @@ module.exports = {
         include: path.resolve(__dirname, 'src'),
         exclude: /(node_modules|test)/,
         loader: 'babel-loader'
+      },
+      {
+        test: /\.[s]?css$/,
+        use: ExtractTextPlugin.extract(['css-loader', 'postcss-loader', 'sass-loader'])
       }
     ]
   },
@@ -40,7 +44,8 @@ module.exports = {
         'NODE_ENV': JSON.stringify(ENVIRONMENT),
         'BABEL_ENV': JSON.stringify(ENVIRONMENT)
       }
-    })
+    }),
+    new ExtractTextPlugin('[name].min.css')
   ],
   devServer: {
     contentBase: path.join(__dirname, BUILD),

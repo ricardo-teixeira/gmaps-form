@@ -1,3 +1,4 @@
+import '../styles/demo.scss';
 import { syntaxHighlight } from '../utils';
 
 const API_KEY = 'AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8';

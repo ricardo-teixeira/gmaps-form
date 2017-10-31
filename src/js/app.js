@@ -1,3 +1,5 @@
+import '../styles/app.scss';
+
 import {
   FORM_FIELDS_SCHEMA,
   gmaps,
@@ -102,8 +104,6 @@ import {
           }
         });
 
-        console.log('submit', formFields)
-
         if (callback) {
           callback(values);
         }
@@ -140,7 +140,7 @@ import {
     function initializeMaps () {
       displayLoading(true);
 
-      const $map = doc.getElementById('map');
+      const $map = doc.getElementById('findGoogleAddressMap');
       const gmapsInstance = gmaps($map, win.google);
 
       gmapsInstance.addMapEventListener('tilesloaded', () =>

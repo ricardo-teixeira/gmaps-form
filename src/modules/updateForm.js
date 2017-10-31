@@ -4,7 +4,6 @@ import { addFormInput } from './addFormInput';
 import { form } from './selectors';
 
 const updateForm = (fields) => {
-  console.log('updateForm', fields)
   if (fields) {
     const address = { ...FORM_FIELDS_SCHEMA, ...fields };
 
