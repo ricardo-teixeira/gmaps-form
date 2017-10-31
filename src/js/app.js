@@ -3,8 +3,10 @@ import {
   gmaps,
   initializeValues,
   updateForm,
+  resetFormFields,
   getFormValues,
   clearFormErrors,
+  clearAutocomplete,
   enableFields,
   mapApiToFormFields,
   validateRequiredFields,
@@ -12,18 +14,16 @@ import {
   modal,
   formSubmitBtn,
   autocompletes,
-  displayLoading,
-  createErrorElement
+  displayLoading
 } from '../modules';
 
 (function (win, doc, $) {
-  'use strict';
-
-  let geocoder;
+  const INITIAL_STATE = { country: 'Brasil' }
   let isMapsInitialized = false;
 
-  function initMap (apiKey, formData, afterSubmit) {
-    const initialData = formData || { country: 'Brasil' };
+  function initMap (apiKey, initialData, afterSubmit) {
+    const formFields = {};
+    initialData = initialData || { ...INITIAL_STATE };
 
     if (!win.google) {
       const script = doc.createElement('script');
@@ -33,6 +33,18 @@ import {
       doc.getElementsByTagName('head')[0].appendChild(script);
     } else if (!isMapsInitialized) {
       initializeMaps();
+    } else {
+      resetFormFields();
+      updateForm(initialData);
+    }
+
+    const setFormPristine = (fields) => {
+      Object.keys(fields).forEach((name) => {
+        const field = fields[name];
+        if (field) {
+          field.touched = false;
+        }
+      });
     }
 
     const handleGeocodePosition = (responses, pos) => {
@@ -41,8 +53,11 @@ import {
         let address = mapApiToFormFields(place);
         address.lat = pos.lat;
         address.lng = pos.lng;
+
+        resetFormFields();
         updateForm(address);
         enableFields(address);
+        setFormPristine(formFields);
       }
     };
 
@@ -58,82 +73,54 @@ import {
     const validateForm = () => {
       const formValues = getFormValues();
       const isValid = validateRequiredFields(formValues);
-
-      return $.Deferred(function () {
-        let self = this;
-
-        if (!isValid) {
-          return self.resolve(false);
-        }
-
-        return validateAddressAsync(formValues).then(function () {
-          return self.resolve(isValid);
-        }).fail(function () {
-          return self.reject(false);
-        });
-
-      });
+      return isValid;
     };
 
-    const validateAddressAsync = (address) => $.Deferred(function () {
-      const self = this;
-      const latLng = {
-        lat: parseFloat(address.lat),
-        lng: parseFloat(address.lng)
-      };
+    const handleSubmit = (event, callback) => {
+      event.preventDefault();
+      const isValid = validateForm();
 
-      geocoder.geocode({ 'location': latLng }, function (results, status) {
-        if (status == google.maps.GeocoderStatus.OK) {
-          let mapsAddress = mapApiToFormFields(results[0]);
+      if (isValid) {
+        const values = getFormValues();
 
-          if (mapsAddress.street && mapsAddress.street != address.street) {
-            form.insertAdjacentHTML('afterend', createErrorElement('Logradouro incorreto'));
+        Object.keys(values).forEach((name) => {
+          if (!formFields[name]) {
+            formFields[name] = {
+              value: values[name],
+              touched: false
+            };
+          } else {
+            formFields[name].value = values[name];
           }
+        });
 
-          if (mapsAddress.neighborhood && mapsAddress.neighborhood != address.neighborhood) {
-            form.insertAdjacentHTML('afterend', createErrorElement('Bairro incorreto'));
-          }
+        console.log('submit', formFields)
 
-          if (mapsAddress.postal_code && mapsAddress.postal_code != address.postal_code) {
-            form.insertAdjacentHTML('afterend', createErrorElement('Bairro incorreto'));
-          }
-
-          self.resolve();
-        } else {
-          self.reject();
+        if (callback) {
+          callback(values);
         }
-      });
-    });
 
-    const handleSubmit = (e, callback) => {
-      e.preventDefault();
-      validateForm().then(function (valid) {
-        if (valid) {
-          let values = getFormValues();
-
-          if (callback) {
-            callback(values);
-          }
-
-          modal.modal('hide');
-        }
-      });
+        clearAutocomplete();
+        modal.modal('hide');
+      }
     };
 
     const handleAutocomplete = (autocomplete) => {
-      let place = autocomplete.getPlace();
+      const place = autocomplete.getPlace();
 
       clearFormErrors();
 
       if (Object.keys(place).length > 1) {
-        let address = mapApiToFormFields(place);
+        const address = mapApiToFormFields(place);
+
         updateForm(address);
         enableFields(address);
+        setFormPristine(formFields);
       }
     };
 
     const setMarkerPosition = (e, gmapsInstance) => {
-      let pos = {
+      const pos = {
         lat: e.latLng.lat(),
         lng: e.latLng.lng()
       };
@@ -143,29 +130,47 @@ import {
     };
 
     function initializeMaps () {
+      displayLoading(true);
+
       const $map = doc.getElementById('map');
       const gmapsInstance = gmaps($map, win.google);
 
-      displayLoading(true);
+      gmapsInstance.addMapEventListener('tilesloaded', () =>
+        displayLoading(false)
+      );
 
-      gmapsInstance.addMapEventListener('click', (e) => setMarkerPosition(e, gmapsInstance));
-      gmapsInstance.addMapEventListener('tilesloaded', () => displayLoading(false));
-      gmapsInstance.addMarkerEventListener('dragstart', () => gmapsInstance.infoWindow.close());
-      gmapsInstance.addMarkerEventListener('dragend', (e) => handleMarkerDrag(e, gmapsInstance));
+      gmapsInstance.addMapEventListener('click', (e) =>
+        setMarkerPosition(e, gmapsInstance)
+      );
+
+      gmapsInstance.addMarkerEventListener('dragstart', () =>
+        gmapsInstance.infoWindow.close()
+      );
+
+      gmapsInstance.addMarkerEventListener('dragend', (e) =>
+        handleMarkerDrag(e, gmapsInstance)
+      );
+
       gmapsInstance.addAutocompleteEventListeners(autocompletes, (autocomplete) => {
         handleAutocomplete(autocomplete);
         gmapsInstance.focusMarkerPosition(autocomplete.getPlace());
       });
 
-      form.addEventListener('change', function (e) {
-        FORM_FIELDS_SCHEMA[e.target.name].onChange(e);
+      form.addEventListener('change', (event) => {
+        FORM_FIELDS_SCHEMA[event.target.name].onChange(event);
+
+        formFields[event.target.name] = {
+          value: event.target.value,
+          touched: true
+        };
       });
 
-      formSubmitBtn.addEventListener('click', function (e) {
-        handleSubmit(e, afterSubmit);
-      });
+      formSubmitBtn.addEventListener('click', (event) =>
+        handleSubmit(event, afterSubmit)
+      );
 
-      modal.on('shown.bs.modal', () => initializeValues(gmapsInstance, initialData));
+      initializeValues(gmapsInstance, initialData);
+      isMapsInitialized = true;
     }
   }
 

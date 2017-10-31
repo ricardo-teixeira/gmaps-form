@@ -2,8 +2,16 @@ const path = require('path');
 const webpack = require('webpack');
 
 const BUILD = './build';
-// const DEVTOOL = 'source-map';
-const DEVTOOL = 'eval-source-map';
+const FLAG = process.env.npm_lifecycle_event;
+
+let ENVIRONMENT = 'development';
+let DEVTOOL = 'eval-source-map';
+
+if (FLAG === 'prod') {
+  // const DEVTOOL = 'source-map';
+  DEVTOOL = '#cheap-module-source-map';
+  ENVIRONMENT = 'production';
+}
 
 module.exports = {
   devtool: DEVTOOL,
@@ -25,7 +33,13 @@ module.exports = {
     ]
   },
   plugins: [
-    new webpack.optimize.ModuleConcatenationPlugin()
+    new webpack.optimize.ModuleConcatenationPlugin(),
+    new webpack.DefinePlugin({
+      'process.env': {
+        'NODE_ENV': JSON.stringify(ENVIRONMENT),
+        'BABEL_ENV': JSON.stringify(ENVIRONMENT)
+      }
+    })
   ],
   devServer: {
     contentBase: path.join(__dirname, BUILD),

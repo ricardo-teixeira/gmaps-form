@@ -7,7 +7,8 @@ const showFormErrors = (errors) => {
 
   errors.forEach((error) => {
     const $field = $(form.elements[error.name]);
-    const $fieldContainer = $field.parent('.form-group');
+    const $fieldContainer = $field.closest('.form-group');
+
     $fieldContainer.addClass('is-invalid');
     $fieldContainer.append(createErrorElement(error.error));
   });

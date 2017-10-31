@@ -4,11 +4,13 @@ import { addFormInput } from './addFormInput';
 import { form } from './selectors';
 
 const updateForm = (fields) => {
+  console.log('updateForm', fields)
   if (fields) {
-    const address = Object.assign({}, FORM_FIELDS_SCHEMA, fields);
+    const address = { ...FORM_FIELDS_SCHEMA, ...fields };
 
     Object.keys(address).forEach(function (field) {
       const element = form.elements[field];
+
       if (element) {
         form.elements[field].value = fields[field] || '';
       } else {

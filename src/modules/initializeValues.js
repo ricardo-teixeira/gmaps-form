@@ -2,36 +2,39 @@ import { modal } from './selectors';
 import { updateForm } from './updateForm';
 import { enableFields } from './enableFields';
 
-const initializeValues = (gmapsInstance, initialData) => {
+const initializeValues = (gmapsInstance, values) => {
   gmapsInstance.triggerMapEvent('resize');
-  updateForm(initialData);
-  modal.find('[data-gmaps="autocomplete"]')[0].focus();
+  updateForm(values);
 
-  if (initialData.lat && initialData.lng) {
+  if (values.lat && values.lng) {
     const pos = {
-      lat: parseFloat(initialData.lat),
-      lng: parseFloat(initialData.lng)
+      lat: parseFloat(values.lat),
+      lng: parseFloat(values.lng)
     };
 
-    gmapsInstance.marker.setPosition(pos);
-    gmapsInstance.map.setCenter(pos);
-    gmapsInstance.map.setZoom(17);
+    gmapsInstance.resetMapPosition(pos);
+
+    // gmapsInstance.marker.setPosition(pos);
+    // gmapsInstance.map.setCenter(pos);
+    // gmapsInstance.map.setZoom(17);
 
   } else {
     const address = [];
 
-    Object.keys(initialData).forEach(function (key) {
-      address.push(initialData[key]);
+    Object.keys(values).forEach(function (key) {
+      address.push(values[key]);
     });
 
     gmapsInstance.findLocationByAddress(address.join(', '), (results, status) => {
       if (status == 'OK') {
         const place = results[0];
-        focusMarkerPosition(place);
+        gmapsInstance.focusMarkerPosition(place);
         enableFields(address);
       }
     });
   }
+
+  modal.find('[data-gmaps="autocomplete"]')[0].focus();
 };
 
 export { initializeValues };
