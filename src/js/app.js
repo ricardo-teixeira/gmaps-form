@@ -8,44 +8,47 @@ import {
   resetFormFields,
   getFormValues,
   clearFormErrors,
-  clearAutocomplete,
   enableFields,
   mapApiToFormFields,
   validateRequiredFields,
-  form,
-  modal,
-  formSubmitBtn,
-  autocompletes,
   displayLoading
 } from '../modules';
 
-(function (win, doc) {
+const findGoogleAddress = () => {
   const INITIAL_STATE = {
     apiKey: '',
     initialValues: {
       country: 'Brasil'
     }
-  }
+  };
+
   let isMapsInitialized = false;
 
-  function initMap (config, afterSubmit) {
+  const init = (config, afterSubmit) => {
     const initialValues = config.initialValues ? config.initialValues : { ...INITIAL_STATE.initialValues };
     const formFields = {};
+    const $form = document.getElementById('mapsForm');
+    const $formSubmitBtn = $form.querySelector('#mapsFormSubmit');
+    const $autocompletes = document.querySelectorAll('[data-gmaps="autocomplete"]');
+    const $loading = document.getElementById('mapsLoading');
+    const $modal = $('#mapsModal');
+    
+    $modal.modal('show');
 
-    if (!win.google) {
-      const script = doc.createElement('script');
+    if (!window.google) {
+      const script = document.createElement('script');
 
       script.onload = initializeMaps;
-      script.onerror = (err) => { 
-        displayLoading(true, 'Erro ao carregar Google Maps');
+      script.onerror = (err) => {
+        displayLoading(true, 'Erro ao carregar Google Maps')($loading);
       };
       script.src = `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places`;
-      doc.getElementsByTagName('head')[0].appendChild(script);
+      document.getElementsByTagName('head')[0].appendChild(script);
     } else if (!isMapsInitialized) {
       initializeMaps();
     } else {
-      resetFormFields();
-      updateForm(initialValues);
+      resetFormFields($form);
+      updateForm(initialValues)($form);
     }
 
     const setFormPristine = (fields) => {
@@ -64,9 +67,9 @@ import {
         address.lat = pos.lat;
         address.lng = pos.lng;
 
-        resetFormFields();
-        updateForm(address);
-        enableFields(address);
+        resetFormFields($form);
+        updateForm(address)($form);
+        enableFields(address)($form);
         setFormPristine(formFields);
       }
     };
@@ -81,8 +84,8 @@ import {
     };
 
     const validateForm = () => {
-      const formValues = getFormValues();
-      const isValid = validateRequiredFields(formValues);
+      const formValues = getFormValues($form);
+      const isValid = validateRequiredFields($form, formValues);
       return isValid;
     };
 
@@ -91,7 +94,7 @@ import {
       const isValid = validateForm();
 
       if (isValid) {
-        const values = getFormValues();
+        const values = getFormValues($form);
 
         Object.keys(values).forEach((name) => {
           if (!formFields[name]) {
@@ -105,24 +108,24 @@ import {
         });
 
         if (callback) {
-          callback(values);
+          callback(formFields, values);
         }
 
-        clearAutocomplete();
-        modal.modal('hide');
+        $modal.find('[data-gmaps="autocomplete"]').value = '';
+        $modal.modal('hide');
       }
     };
 
     const handleAutocomplete = (autocomplete) => {
       const place = autocomplete.getPlace();
 
-      clearFormErrors();
+      clearFormErrors($form);
 
       if (Object.keys(place).length > 1) {
         const address = mapApiToFormFields(place);
 
-        updateForm(address);
-        enableFields(address);
+        updateForm(address)($form);
+        enableFields(address)($form);
         setFormPristine(formFields);
       }
     };
@@ -138,13 +141,13 @@ import {
     };
 
     function initializeMaps () {
-      displayLoading(true);
+      displayLoading(true)($loading);
 
-      const $map = doc.getElementById('findGoogleAddressMap');
-      const gmapsInstance = gmaps($map, win.google);
+      const $map = document.getElementById('findGoogleAddressMap');
+      const gmapsInstance = gmaps($map, window.google);
 
       gmapsInstance.addMapEventListener('tilesloaded', () =>
-        displayLoading(false)
+        displayLoading(false)($loading)
       );
 
       gmapsInstance.addMapEventListener('click', (e) =>
@@ -159,12 +162,12 @@ import {
         handleMarkerDrag(e, gmapsInstance)
       );
 
-      gmapsInstance.addAutocompleteEventListeners(autocompletes, (autocomplete) => {
+      gmapsInstance.addAutocompleteEventListeners($autocompletes, (autocomplete) => {
         handleAutocomplete(autocomplete);
         gmapsInstance.focusMarkerPosition(autocomplete.getPlace());
       });
 
-      form.addEventListener('change', (event) => {
+      $form.addEventListener('change', (event) => {
         FORM_FIELDS_SCHEMA[event.target.name].onChange(event);
 
         formFields[event.target.name] = {
@@ -173,15 +176,22 @@ import {
         };
       });
 
-      formSubmitBtn.addEventListener('click', (event) =>
+      $formSubmitBtn.addEventListener('click', (event) =>
         handleSubmit(event, afterSubmit)
       );
 
-      initializeValues(gmapsInstance, initialValues);
+      initializeValues(gmapsInstance, initialValues, () => {
+        $modal.find('[data-gmaps="autocomplete"]')[0].focus();
+      })($form);
+
       isMapsInitialized = true;
     }
-  }
+  };
 
-  win.findGoogleAddress = initMap;
+  return init;
 
-})(window, document);
+};
+
+window.findGoogleAddress = findGoogleAddress();
+
+export default findGoogleAddress;

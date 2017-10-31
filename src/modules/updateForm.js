@@ -1,24 +1,24 @@
 import FORM_FIELDS_SCHEMA from './formFieldsSchema';
-import { printBasicLocation } from './printBasicLocation';
+import { printBasicAddress } from './printBasicAddress';
 import { addFormInput } from './addFormInput';
-import { form } from './selectors';
 
-const updateForm = (fields) => {
-  if (fields) {
-    const address = { ...FORM_FIELDS_SCHEMA, ...fields };
+const updateForm = (fields) =>
+  (form) => {
+    if (fields) {
+      const address = { ...FORM_FIELDS_SCHEMA, ...fields };
 
-    Object.keys(address).forEach(function (field) {
-      const element = form.elements[field];
+      Object.keys(address).forEach(function (field) {
+        const element = form.elements[field];
 
-      if (element) {
-        form.elements[field].value = fields[field] || '';
-      } else {
-        addFormInput(field, fields[field]);
-      }
-    });
+        if (element) {
+          form.elements[field].value = fields[field] || '';
+        } else {
+          addFormInput(field, fields[field])(form);
+        }
+      });
 
-    printBasicLocation();
-  }
-};
+      printBasicAddress(address);
+    }
+  };
 
 export { updateForm };

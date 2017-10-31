@@ -1,7 +1,4 @@
-import { getFormValues } from './getFormValues';
-
-const printBasicLocation = () => {
-  const address = getFormValues();
+const printBasicAddress = (address) => {
   const formattedAddress = [];
 
   if (address.country) {
@@ -19,4 +16,4 @@ const printBasicLocation = () => {
   document.getElementById('formatedInputLocation').innerText = formattedAddress.join(', ');
 };
 
-export { printBasicLocation };
+export { printBasicAddress };

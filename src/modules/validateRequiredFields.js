@@ -1,9 +1,8 @@
 import { FORM_FIELDS_SCHEMA } from './formFieldsSchema';
 import { validatePostalCode } from './validatePostalCode';
 import { showFormErrors } from './showFormErrors';
-import { form } from './selectors';
 
-const validateRequiredFields = (formValues) => {
+const validateRequiredFields = (form, formValues) => {
   const invalidFields = [];
 
   Object.keys(formValues).forEach(function (name) {
@@ -30,7 +29,7 @@ const validateRequiredFields = (formValues) => {
     }
   });
 
-  showFormErrors(invalidFields);
+  showFormErrors(invalidFields)(form);
 
   return invalidFields.length == 0;
 };

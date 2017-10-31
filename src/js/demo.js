@@ -6,7 +6,6 @@ const $exampleForm = document.getElementById('exampleForm');
 const $submitResultsLeft = document.getElementById('submitResultsLeft');
 const $submitResultsRight = document.getElementById('submitResultsRight');
 const $newAddressBtn = document.getElementById('addNewAddress');
-const $modal = $('#mapsModal');
 const initialData = {
   pais: 'Brasil',
   estado: 'São Paulo',
@@ -45,8 +44,6 @@ const init = () => {
 
     $submitResultsRight.innerHTML = '<pre><strong>Submit Values</strong>\n' + syntaxHighlight(values) + '</pre>';
   });
-
-  $modal.modal('show');
 }
 
 document.addEventListener('DOMContentLoaded', init);

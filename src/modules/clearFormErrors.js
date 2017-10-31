@@ -1,6 +1,4 @@
-import { form } from './selectors';
-
-const clearFormErrors = () => {
+const clearFormErrors = (form) => {
   const $errors = form.querySelectorAll('.form-error');
 
   $errors.forEach((error) => {
