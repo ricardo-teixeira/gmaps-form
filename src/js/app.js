@@ -17,25 +17,33 @@ import {
   displayLoading
 } from '../modules';
 
-(function (win, doc, $) {
-  const INITIAL_STATE = { country: 'Brasil' }
+(function (win, doc) {
+  const INITIAL_STATE = {
+    apiKey: '',
+    initialValues: {
+      country: 'Brasil'
+    }
+  }
   let isMapsInitialized = false;
 
-  function initMap (apiKey, initialData, afterSubmit) {
+  function initMap (config, afterSubmit) {
+    const initialValues = config.initialValues ? config.initialValues : { ...INITIAL_STATE.initialValues };
     const formFields = {};
-    initialData = initialData || { ...INITIAL_STATE };
 
     if (!win.google) {
       const script = doc.createElement('script');
 
       script.onload = initializeMaps;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+      script.onerror = (err) => { 
+        displayLoading(true, 'Erro ao carregar Google Maps');
+      };
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places`;
       doc.getElementsByTagName('head')[0].appendChild(script);
     } else if (!isMapsInitialized) {
       initializeMaps();
     } else {
       resetFormFields();
-      updateForm(initialData);
+      updateForm(initialValues);
     }
 
     const setFormPristine = (fields) => {
@@ -169,11 +177,11 @@ import {
         handleSubmit(event, afterSubmit)
       );
 
-      initializeValues(gmapsInstance, initialData);
+      initializeValues(gmapsInstance, initialValues);
       isMapsInitialized = true;
     }
   }
 
   win.findGoogleAddress = initMap;
 
-})(window, document, jQuery);
+})(window, document);

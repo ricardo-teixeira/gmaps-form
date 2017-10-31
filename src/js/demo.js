@@ -1,9 +1,12 @@
-let $exampleForm = document.getElementById('exampleForm');
-let $submitResultsLeft = document.getElementById('submitResultsLeft');
-let $submitResultsRight = document.getElementById('submitResultsRight');
-let $newAddressBtn = document.getElementById('addNewAddress');
+import { syntaxHighlight } from '../utils';
 
-let initialData = {
+const API_KEY = 'AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8';
+const $exampleForm = document.getElementById('exampleForm');
+const $submitResultsLeft = document.getElementById('submitResultsLeft');
+const $submitResultsRight = document.getElementById('submitResultsRight');
+const $newAddressBtn = document.getElementById('addNewAddress');
+const $modal = $('#mapsModal');
+const initialData = {
   pais: 'Brasil',
   estado: 'São Paulo',
   cidade: 'Campinas',
@@ -11,42 +14,45 @@ let initialData = {
   lng: -47.00317025184631
 };
 
-const API_KEY = 'AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8';
+const init = () => {
+  applyValuesValues(initialData);
 
-let mappedData = mapFormValuesToApiProps(initialData);
-applyValuesValues(initialData);
+  const data = getFormValues();
+  const formatted = mapFormValuesToApiProps(data);
 
-document.addEventListener('DOMContentLoaded', function () {
-  let data = getFormValues();
-  let formatted = mapFormValuesToApiProps(data);
-
-  findGoogleAddress(API_KEY, formatted, function (values) {
+  findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (values) => {
     applyValuesValues(mapFormValuesToApiProps(values, true));
+
     $submitResultsLeft.innerHTML = '<pre><strong>Maps API values</strong>\n' + syntaxHighlight(values) + '</pre>';
   });
 
-  $('#mapsModal').modal('show');
-});
+  $newAddressBtn.addEventListener('click', () => {
+    const data = getFormValues();
+    const formatted = mapFormValuesToApiProps(data);
 
-$newAddressBtn.addEventListener('click', function () {
-  let data = getFormValues();
-  let formatted = mapFormValuesToApiProps(data);
+    findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (values) => {
+      const formattedResponse = mapFormValuesToApiProps(values, true);
 
-  findGoogleAddress(API_KEY, formatted, function (values) {
-    let formattedResponse = mapFormValuesToApiProps(values, true);
-    applyValuesValues(formattedResponse);
+      applyValuesValues(formattedResponse);
+    });
   });
-});
 
-$exampleForm.addEventListener('submit', function (e) {
-  e.preventDefault();
-  let values = getFormValues();
-  $submitResultsRight.innerHTML = '<pre><strong>Submit Values</strong>\n' + syntaxHighlight(values) + '</pre>';
-});
+  $exampleForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-function mapFormValuesToApiProps (values, reverse) {
-  let mappedObj = {};
-  let keyMap = {
+    const values = getFormValues();
+
+    $submitResultsRight.innerHTML = '<pre><strong>Submit Values</strong>\n' + syntaxHighlight(values) + '</pre>';
+  });
+
+  $modal.modal('show');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+const mapFormValuesToApiProps = (values, reverse) => {
+  const mappedObj = {};
+  const keyMap = {
     pais: 'country',
     estado: 'state',
     cidade: 'city',
@@ -74,41 +80,20 @@ function mapFormValuesToApiProps (values, reverse) {
   return mappedObj;
 }
 
-function applyValuesValues (values) {
-  Object.keys(values).forEach(function (key) {
+const applyValuesValues = (values) => {
+  Object.keys(values).forEach((key) => {
     $exampleForm.elements[key].value = values[key];
   });
 }
 
-function getFormValues (values) {
-  var values = {};
-  Array.prototype.forEach.call($exampleForm.elements, function (element) {
+const getFormValues = () => {
+  const values = {};
+
+  Array.prototype.forEach.call($exampleForm.elements, (element) => {
     if (element.name) {
       values[element.name] = element.value;
     }
   });
 
   return values;
-}
-
-function syntaxHighlight (json) {
-  if (typeof json != 'string') {
-    json = JSON.stringify(json, undefined, 2);
-  }
-  json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-    let cls = 'number';
-    if (/^"/.test(match)) {
-      if (/:$/.test(match)) {
-        cls = 'key';
-      } else {
-        cls = 'string';
-      }
-    } else if (/true|false/.test(match)) {
-      cls = 'boolean';
-    } else if (/null/.test(match)) {
-      cls = 'null';
-    }
-    return '<span class="' + cls + '">' + match + '</span>';
-  });
 }

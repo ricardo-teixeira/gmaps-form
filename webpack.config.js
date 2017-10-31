@@ -16,11 +16,12 @@ if (FLAG === 'prod') {
 module.exports = {
   devtool: DEVTOOL,
   entry: {
-    app: './src/js/app.js'
+    app: './src/js/app.js',
+    demo: './src/js/demo.js'
   },
   output: {
     path: path.resolve(__dirname, BUILD),
-    filename: 'app.bundle.js'
+    filename: '[name].bundle.js'
   },
   module: {
     loaders: [

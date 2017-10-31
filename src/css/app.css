@@ -27,6 +27,10 @@
   box-shadow: none;
 }
 
+.card-form .form-control.gm-err-autocomplete {
+  background-position: center left;
+}
+
 .card-form .form-control.disabled {
   background-color: #EEEEEE;
   cursor: default;
