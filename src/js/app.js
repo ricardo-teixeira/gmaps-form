@@ -45,14 +45,14 @@ const findGoogleAddress = (win, doc) => {
       if (!win.google) {
         const script = doc.createElement('script');
 
-        script.onload = createGoogleMaps;
+        script.onload = creatGoogleMaps;
         script.onerror = (err) => {
           displayLoading(true, 'Erro ao carregar Google Maps')($loading);
         };
         script.src = `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places`;
         doc.getElementsByTagName('head')[0].appendChild(script);
       } else if (!isMapsInitialized) {
-        createGoogleMaps();
+        creatGoogleMaps();
       } else {
         initializeValues(gmapsInstance, initialValues)($form);
       }
@@ -146,7 +146,7 @@ const findGoogleAddress = (win, doc) => {
         gmapsInstance.getGeocodePosition(pos, handleGeocodePosition);
       };
 
-      function createGoogleMaps () {
+      function creatGoogleMaps () {
         displayLoading(true)($loading);
 
         const $map = doc.getElementById('findGoogleAddressMap');
@@ -186,10 +186,12 @@ const findGoogleAddress = (win, doc) => {
           handleSubmit(event, afterSubmit)
         );
 
-        initializeValues(gmapsInstance, initialValues, () => {
+        $modal.on('shown.bs.modal', () => {
           $modal.find('[data-gmaps="autocomplete"]')[0].focus();
           gmapsInstance.triggerMapEvent('resize');
-        })($form);
+        });
+
+        initializeValues(gmapsInstance, initialValues)($form);
 
         isMapsInitialized = true;
       }

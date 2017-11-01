@@ -80,14 +80,16 @@ const focusMarkerPosition = (map, marker) =>
         lng: place.geometry.location.lng()
       };
 
-      marker.setPosition(pos);
-
       if (place.geometry.viewport) {
         map.fitBounds(place.geometry.viewport);
       } else {
-        map.setCenter(pos);
         map.setZoom(17);
       }
+
+      setTimeout(() => {
+        marker.setPosition(pos);
+        map.setCenter(pos);
+      }, 250);
     }
   };
 
@@ -104,15 +106,27 @@ const validateAddressAsync = (google, geocoder) =>
         const mapsAddress = mapApiToFormFields(results[0]);
         const addressDiff = [];
 
-        if (mapsAddress.street && mapsAddress.street != address.street) {
+        if (
+          mapsAddress.street &&
+          mapsAddress.street !=
+          address.street
+        ) {
           addressDiff.push({ name: 'street', error: 'Logradouro incorreto' });
         }
 
-        if (mapsAddress.neighborhood && mapsAddress.neighborhood != address.neighborhood) {
+        if (
+          mapsAddress.neighborhood &&
+          mapsAddress.neighborhood !=
+          address.neighborhood
+        ) {
           addressDiff.push({ name: 'neighborhood', error: 'Bairro incorreto' });
         }
 
-        if (mapsAddress.postal_code && mapsAddress.postal_code != address.postal_code) {
+        if (
+          mapsAddress.postal_code &&
+          mapsAddress.postal_code !=
+          address.postal_code
+        ) {
           addressDiff.push({ name: 'postal_code', error: 'CEP incorreto' });
         }
 

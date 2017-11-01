@@ -21,8 +21,7 @@ const initializeValues = (gmapsInstance, values, callback) =>
 
       gmapsInstance.findLocationByAddress(address.join(', '), (results, status) => {
         if (status == 'OK') {
-          const place = results[0];
-          gmapsInstance.focusMarkerPosition(place);
+          gmapsInstance.focusMarkerPosition(results[0]);
           enableFields(address)(form);
         }
       });
