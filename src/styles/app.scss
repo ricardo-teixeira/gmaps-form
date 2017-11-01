@@ -7,60 +7,76 @@
   left: 15px;
   z-index: 100;
   box-shadow: 0 0 10px #bbb;
+
   .form-group {
     padding: 5px 20px;
     margin: 0 !important;
   }
+
   .card-header {
     border-bottom: 1px solid #ccc;
     padding: 15px 20px;
   }
+
   .card-footer {
     padding: 15px 20px;
   }
+
   .form-control {
     box-shadow: none;
+
     &.gm-err-autocomplete {
       background-position: center left;
     }
+
     &.disabled {
       background-color: #EEEEEE;
       cursor: default;
     }
   }
+
   .btn {
     background-color: #02A2C2;
     border: none;
     text-transform: uppercase;
     font-size: 14px;
     margin-bottom: 15px;
+    padding: 10px 16px !important;
   }
+
   .pr-1 {
     padding-right: 6px !important;
   }
+
   .pl-1 {
     padding-left: 6px !important;
   }
+
   .bg-white {
     background-color: #fff !important;
   }
+
   .input-group {
     .form-control {
       border-right: 0;
       padding-right: 0;
     }
+
     .input-group-addon {
       color: #ababab;
+
       .icon-success {
         color: #00A0C0;
       }
     }
   }
+
   .form-control {
     &.is-invalid, &:invalid {
       border-color: #dc3545;
     }
   }
+
   .form-group label {
     margin-top: 5px;
     margin-bottom: 5px;
@@ -117,6 +133,7 @@
   &.fade {
     animation-name: fadeOutDown;
     animation-duration: .5s;
+
     &.in {
       animation-name: fadeInUp;
     }
@@ -128,33 +145,45 @@
     height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+
     .modal-content {
       border-radius: 0;
       border: none;
       height: 100%;
+
       .modal-header {
         background-color: #00A0C0;
         padding: 12px 15px !important;
         border: 0;
+        position: relative;
+
         .modal-title {
           font-weight: 400;
-          font-size: 22px;
+          font-size: 22px !important;
           color: #fff !important;
           text-align: left !important;
         }
+
         .close {
           color: #fff;
           cursor: pointer;
           opacity: .8;
           margin-top: 4px;
           top: 0;
-          font-weight: lighter;
+          font-weight: normal;
           font-size: 24px !important;
+          position: absolute;
+          right: 15px;
+          top: 0;
+          bottom: 0;
+          margin: auto;
+
           &:hover {
             opacity: 1;
           }
         }
       }
+      
       .modal-body {
         position: relative;
         height: calc(100% - 55px);

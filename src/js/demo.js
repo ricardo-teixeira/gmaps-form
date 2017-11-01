@@ -17,24 +17,25 @@ const initialData = {
 const init = () => {
   applyValuesValues(initialData);
 
+  const $appContainer = document.querySelector('[data-gmaps="find-google-address"]');
   const data = getFormValues();
   const formatted = mapFormValuesToApiProps(data);
 
-  findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (values) => {
+  findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (touched, values) => {
     applyValuesValues(mapFormValuesToApiProps(values, true));
 
     $submitResultsLeft.innerHTML = '<pre><strong>Maps API values</strong>\n' + syntaxHighlight(values) + '</pre>';
-  });
+  })($appContainer);
 
   $newAddressBtn.addEventListener('click', () => {
     const data = getFormValues();
     const formatted = mapFormValuesToApiProps(data);
 
-    findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (values) => {
+    findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (touched, values) => {
       const formattedResponse = mapFormValuesToApiProps(values, true);
 
       applyValuesValues(formattedResponse);
-    });
+    })($appContainer);
   });
 
   $exampleForm.addEventListener('submit', (e) => {

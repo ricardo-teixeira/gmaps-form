@@ -34,6 +34,15 @@ module.exports = {
       {
         test: /\.[s]?css$/,
         use: ExtractTextPlugin.extract(['css-loader', 'postcss-loader', 'sass-loader'])
+      },
+      {
+        test: /\.(html)$/,
+        use: {
+          loader: 'html-loader',
+          options: {
+            attrs: [':data-src']
+          }
+        }
       }
     ]
   },
