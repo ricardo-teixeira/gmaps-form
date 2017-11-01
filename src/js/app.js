@@ -117,7 +117,8 @@ const findGoogleAddress = (win, doc) => {
             callback(formFields, values);
           }
 
-          $modal.find('[data-gmaps="autocomplete"]').value = '';
+          resetFormFields($form);
+          $autocompletes[0].value = '';
           $modal.modal('hide');
         }
       };
@@ -187,8 +188,8 @@ const findGoogleAddress = (win, doc) => {
         );
 
         $modal.on('shown.bs.modal', () => {
-          $modal.find('[data-gmaps="autocomplete"]')[0].focus();
           gmapsInstance.triggerMapEvent('resize');
+          $autocompletes[0].focus();
         });
 
         initializeValues(gmapsInstance, initialValues)($form);

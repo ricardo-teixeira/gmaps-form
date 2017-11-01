@@ -7,9 +7,10 @@ const $submitResultsLeft = document.getElementById('submitResultsLeft');
 const $submitResultsRight = document.getElementById('submitResultsRight');
 const $newAddressBtn = document.getElementById('addNewAddress');
 const initialData = {
+  rua: 'Rua Mário Carnicelli',
   pais: 'Brasil',
-  // estado: 'São Paulo',
-  // cidade: 'Campinas',
+  estado: 'São Paulo',
+  cidade: 'Campinas',
   // lat: -22.843125677855074,
   // lng: -47.00317025184631
 };

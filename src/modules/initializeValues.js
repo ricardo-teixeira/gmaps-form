@@ -13,11 +13,11 @@ const initializeValues = (gmapsInstance, values, callback) =>
 
       gmapsInstance.resetMapPosition(pos);
     } else {
-      const address = [];
-
-      Object.keys(values).forEach(function (key) {
-        address.push(values[key]);
-      });
+      const address = [
+        values.country || '',
+        values.state || '',
+        values.city || ''
+      ];
 
       gmapsInstance.findLocationByAddress(address.join(', '), (results, status) => {
         if (status == 'OK') {
