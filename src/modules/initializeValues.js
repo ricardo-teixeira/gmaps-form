@@ -3,7 +3,6 @@ import { enableFields } from './enableFields';
 
 const initializeValues = (gmapsInstance, values, callback) =>
   (form) => {
-    gmapsInstance.triggerMapEvent('resize');
     updateForm(values)(form);
 
     if (values.lat && values.lng) {
@@ -13,7 +12,6 @@ const initializeValues = (gmapsInstance, values, callback) =>
       };
 
       gmapsInstance.resetMapPosition(pos);
-
     } else {
       const address = [];
 

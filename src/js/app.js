@@ -17,6 +17,8 @@ import {
 
 const findGoogleAddress = (win, doc) => {
   let isMapsInitialized = false;
+  let gmapsInstance;
+
   const INITIAL_STATE = {
     apiKey: '',
     initialValues: {
@@ -25,35 +27,34 @@ const findGoogleAddress = (win, doc) => {
   };
 
   const init = (config, afterSubmit) =>
-    ($container) => {
+    ($containerElement) => {
       const initialValues = config.initialValues ? config.initialValues : { ...INITIAL_STATE.initialValues };
       const formFields = {};
 
       if (!isMapsInitialized) {
-        $container.innerHTML = $template;
+        $containerElement.innerHTML = $template;
       }
 
-      const $form = $container.querySelector('[data-gmaps="mapsForm"]');
+      const $form = $containerElement.querySelector('[data-gmaps="mapsForm"]');
       const $formSubmitBtn = $form.querySelector('[data-gmaps="mapsFormSubmit');
-      const $autocompletes = $container.querySelectorAll('[data-gmaps="autocomplete"]');
-      const $loading = $container.querySelector('[data-gmaps="mapsLoading"]');
+      const $autocompletes = $containerElement.querySelectorAll('[data-gmaps="autocomplete"]');
+      const $loading = $containerElement.querySelector('[data-gmaps="mapsLoading"]');
       const $modal = $('#mapsModal');
       $modal.modal('show');
 
       if (!win.google) {
         const script = doc.createElement('script');
 
-        script.onload = initializeMaps;
+        script.onload = createGoogleMaps;
         script.onerror = (err) => {
           displayLoading(true, 'Erro ao carregar Google Maps')($loading);
         };
         script.src = `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places`;
         doc.getElementsByTagName('head')[0].appendChild(script);
       } else if (!isMapsInitialized) {
-        initializeMaps();
+        createGoogleMaps();
       } else {
-        resetFormFields($form);
-        updateForm(initialValues)($form);
+        initializeValues(gmapsInstance, initialValues)($form);
       }
 
       const setFormPristine = (fields) => {
@@ -145,11 +146,11 @@ const findGoogleAddress = (win, doc) => {
         gmapsInstance.getGeocodePosition(pos, handleGeocodePosition);
       };
 
-      function initializeMaps () {
+      function createGoogleMaps () {
         displayLoading(true)($loading);
 
         const $map = doc.getElementById('findGoogleAddressMap');
-        const gmapsInstance = gmaps($map, win.google);
+        gmapsInstance = gmaps($map, win.google);
 
         gmapsInstance.addMapEventListener('tilesloaded', () =>
           displayLoading(false)($loading)
@@ -187,6 +188,7 @@ const findGoogleAddress = (win, doc) => {
 
         initializeValues(gmapsInstance, initialValues, () => {
           $modal.find('[data-gmaps="autocomplete"]')[0].focus();
+          gmapsInstance.triggerMapEvent('resize');
         })($form);
 
         isMapsInitialized = true;

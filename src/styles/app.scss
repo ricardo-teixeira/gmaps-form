@@ -24,6 +24,8 @@
 
   .form-control {
     box-shadow: none;
+    height: auto !important;
+    min-height: 34px !important;
 
     &.gm-err-autocomplete {
       background-position: center left;
@@ -168,7 +170,6 @@
           color: #fff;
           cursor: pointer;
           opacity: .8;
-          margin-top: 4px;
           top: 0;
           font-weight: normal;
           font-size: 24px !important;
@@ -183,7 +184,7 @@
           }
         }
       }
-      
+
       .modal-body {
         position: relative;
         height: calc(100% - 55px);

@@ -18,7 +18,9 @@
     padding: 15px 20px; }
   .card-form .form-control {
     -webkit-box-shadow: none;
-            box-shadow: none; }
+            box-shadow: none;
+    height: auto !important;
+    min-height: 34px !important; }
     .card-form .form-control.gm-err-autocomplete {
       background-position: center left; }
     .card-form .form-control.disabled {
@@ -123,7 +125,6 @@
           color: #fff;
           cursor: pointer;
           opacity: .8;
-          margin-top: 4px;
           top: 0;
           font-weight: normal;
           font-size: 24px !important;

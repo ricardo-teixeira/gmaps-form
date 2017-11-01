@@ -8,10 +8,10 @@ const $submitResultsRight = document.getElementById('submitResultsRight');
 const $newAddressBtn = document.getElementById('addNewAddress');
 const initialData = {
   pais: 'Brasil',
-  estado: 'São Paulo',
-  cidade: 'Campinas',
-  lat: -22.843125677855074,
-  lng: -47.00317025184631
+  // estado: 'São Paulo',
+  // cidade: 'Campinas',
+  // lat: -22.843125677855074,
+  // lng: -47.00317025184631
 };
 
 const init = () => {
