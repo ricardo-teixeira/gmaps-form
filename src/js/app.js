@@ -9,28 +9,27 @@ import {
   resetFormFields,
   getFormValues,
   clearFormErrors,
-  enableFields,
   mapApiToFormFields,
   validateRequiredFields,
   displayLoading,
-  setFormUntouched
+  setFormUntouched,
+  mergedTouchedWithValues
 } from '../modules';
 
 const findGoogleAddress = (win, doc) => {
-  let isMapsInitialized = false;
-  let gmapsInstance;
-
   const INITIAL_STATE = {
     apiKey: '',
     initialValues: {
       country: 'Brasil'
     }
   };
+  let isMapsInitialized = false;
+  let gmapsInstance;
 
   const init = (config, afterSubmit) =>
     ($containerElement) => {
       const initialValues = config.initialValues ? config.initialValues : { ...INITIAL_STATE.initialValues };
-      const formFieldsResult = {};
+      const formTouchedFields = {};
 
       if (!isMapsInitialized) {
         $containerElement.innerHTML = $template;
@@ -45,7 +44,6 @@ const findGoogleAddress = (win, doc) => {
 
       if (!win.google) {
         const script = doc.createElement('script');
-
         script.onload = creatGoogleMaps;
         script.onerror = (err) => {
           displayLoading(true, 'Erro ao carregar Google Maps')($loading);
@@ -58,17 +56,6 @@ const findGoogleAddress = (win, doc) => {
         initializeValues(gmapsInstance, initialValues)($form);
       }
 
-      // const setFormUntouched = (fields) => {
-      //   Object.keys(fields).forEach((name) => {
-      //     const field = fields[name];
-      //     if (field) {
-      //       field.touched = false;
-      //     }
-      //   });
-
-      //   return fields;
-      // }
-
       const handleGeocodePosition = (responses, pos) => {
         if (responses && responses.length > 0) {
           let place = responses[0];
@@ -78,8 +65,7 @@ const findGoogleAddress = (win, doc) => {
 
           resetFormFields($form);
           updateForm(address)($form);
-          enableFields(address)($form);
-          setFormUntouched(formFieldsResult);
+          setFormUntouched(formTouchedFields);
         }
       };
 
@@ -92,32 +78,22 @@ const findGoogleAddress = (win, doc) => {
         gmapsInstance.getGeocodePosition(latLng, handleGeocodePosition);
       };
 
-      const validateForm = () => {
-        const formValues = getFormValues($form);
-        const isValid = validateRequiredFields($form, formValues);
+      const validateForm = (form) => {
+        const formValues = getFormValues(form);
+        const isValid = validateRequiredFields(form, formValues);
         return isValid;
       };
 
       const handleSubmit = (event, callback) => {
         event.preventDefault();
-        const isValid = validateForm();
+        const isValid = validateForm($form);
 
         if (isValid) {
           const values = getFormValues($form);
-
-          Object.keys(values).forEach((name) => {
-            if (!formFieldsResult[name]) {
-              formFieldsResult[name] = {
-                value: values[name],
-                touched: false
-              };
-            } else {
-              formFieldsResult[name].value = values[name];
-            }
-          });
+          const mergedFields = mergedTouchedWithValues(values, formTouchedFields);
 
           if (callback) {
-            callback(formFieldsResult, values);
+            callback(mergedFields, values);
           }
 
           resetFormFields($form);
@@ -135,8 +111,7 @@ const findGoogleAddress = (win, doc) => {
           const address = mapApiToFormFields(place);
 
           updateForm(address)($form);
-          enableFields(address)($form);
-          setFormUntouched(formFieldsResult);
+          setFormUntouched(formTouchedFields);
         }
       };
 
@@ -179,11 +154,7 @@ const findGoogleAddress = (win, doc) => {
 
         $form.addEventListener('change', (event) => {
           FORM_FIELDS_SCHEMA[event.target.name].onChange(event);
-
-          formFieldsResult[event.target.name] = {
-            value: event.target.value,
-            touched: true
-          };
+          formTouchedFields[event.target.name] = true;
         });
 
         $formSubmitBtn.addEventListener('click', (event) =>

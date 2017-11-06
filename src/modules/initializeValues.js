@@ -1,5 +1,4 @@
 import { updateForm } from './updateForm';
-import { enableFields } from './enableFields';
 
 const initializeValues = (gmapsInstance, values, callback) =>
   (form) => {
@@ -11,7 +10,7 @@ const initializeValues = (gmapsInstance, values, callback) =>
         lng: parseFloat(values.lng)
       };
 
-      gmapsInstance.resetMapPosition(pos);
+      gmapsInstance.resetMapPosition(pos, true);
     } else {
       const address = [
         values.country || '',
@@ -22,7 +21,6 @@ const initializeValues = (gmapsInstance, values, callback) =>
       gmapsInstance.findLocationByAddress(address.join(', '), (results, status) => {
         if (status == 'OK') {
           gmapsInstance.focusMarkerPosition(results[0]);
-          enableFields(address)(form);
         }
       });
     }

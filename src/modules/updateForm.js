@@ -1,6 +1,7 @@
 import FORM_FIELDS_SCHEMA from './formFieldsSchema';
 import { printBasicAddress } from './printBasicAddress';
 import { addFormInput } from './addFormInput';
+import { enableFields } from './enableFields';
 
 const updateForm = (fields) =>
   (form) => {
@@ -17,6 +18,7 @@ const updateForm = (fields) =>
         }
       });
 
+      enableFields(address)(form);
       printBasicAddress(address);
     }
   };

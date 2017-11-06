@@ -80,63 +80,18 @@ const focusMarkerPosition = (map, marker) =>
         lng: place.geometry.location.lng()
       };
 
-      if (place.geometry.viewport) {
-        map.fitBounds(place.geometry.viewport);
-      } else {
-        map.setZoom(17);
-      }
-
       setTimeout(() => {
+        if (place.geometry.viewport) {
+          map.fitBounds(place.geometry.viewport);
+        } else {
+          map.setZoom(17);
+        }
+
         marker.setPosition(pos);
         map.setCenter(pos);
       }, 250);
     }
   };
-
-const validateAddressAsync = (google, geocoder) =>
-  (address) => $.Deferred(function () {
-    const self = this;
-    const latLng = {
-      lat: parseFloat(address.lat),
-      lng: parseFloat(address.lng)
-    };
-
-    geocoder.geocode({ 'location': latLng }, (results, status) => {
-      if (status == google.maps.GeocoderStatus.OK) {
-        const mapsAddress = mapApiToFormFields(results[0]);
-        const addressDiff = [];
-
-        if (
-          mapsAddress.street &&
-          mapsAddress.street !=
-          address.street
-        ) {
-          addressDiff.push({ name: 'street', error: 'Logradouro incorreto' });
-        }
-
-        if (
-          mapsAddress.neighborhood &&
-          mapsAddress.neighborhood !=
-          address.neighborhood
-        ) {
-          addressDiff.push({ name: 'neighborhood', error: 'Bairro incorreto' });
-        }
-
-        if (
-          mapsAddress.postal_code &&
-          mapsAddress.postal_code !=
-          address.postal_code
-        ) {
-          addressDiff.push({ name: 'postal_code', error: 'CEP incorreto' });
-        }
-
-        self.resolve(addressDiff);
-
-      } else {
-        self.reject();
-      }
-    });
-  });
 
 const gmaps = (selector, googleApi) => {
   const map = new googleApi.maps.Map(selector, mapConfig(googleApi));
@@ -153,7 +108,6 @@ const gmaps = (selector, googleApi) => {
     resetMapPosition: resetMapPosition(map, marker),
     getGeocodePosition: getGeocodePosition(geocoder, infoWindow, map, marker),
     findLocationByAddress: findLocationByAddress(geocoder),
-    validateAddressAsync: validateAddressAsync(googleApi, geocoder),
     addAutocompleteEventListeners: addAutocompleteEventListeners(googleApi, map),
     triggerMapEvent: triggerMapEvent(googleApi, map),
     addMapEventListener: addEventListenerGenerator(googleApi.maps.event, map),

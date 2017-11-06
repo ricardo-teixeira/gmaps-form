@@ -1,12 +1,8 @@
 const setFormUntouched = (fields) => {
   Object.keys(fields).forEach((name) => {
-    const field = fields[name];
-    if (field) {
-      field.touched = false;
-    }
+    fields[name] = false;
   });
 
-  console.log(fields)
   return fields;
 }
 

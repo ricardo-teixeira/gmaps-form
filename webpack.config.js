@@ -40,7 +40,7 @@ module.exports = {
         use: {
           loader: 'html-loader',
           options: {
-            attrs: [':data-src']
+            minimize: true
           }
         }
       }

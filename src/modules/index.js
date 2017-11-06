@@ -16,3 +16,4 @@ export * from './enableFields';
 export * from './displayLoading';
 export * from './createErrorElement';
 export * from './setFormUntouched';
+export * from './mergedTouchedWithValues';
