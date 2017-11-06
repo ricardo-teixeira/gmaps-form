@@ -12,7 +12,8 @@ import {
   enableFields,
   mapApiToFormFields,
   validateRequiredFields,
-  displayLoading
+  displayLoading,
+  setFormUntouched
 } from '../modules';
 
 const findGoogleAddress = (win, doc) => {
@@ -29,7 +30,7 @@ const findGoogleAddress = (win, doc) => {
   const init = (config, afterSubmit) =>
     ($containerElement) => {
       const initialValues = config.initialValues ? config.initialValues : { ...INITIAL_STATE.initialValues };
-      const formFields = {};
+      const formFieldsResult = {};
 
       if (!isMapsInitialized) {
         $containerElement.innerHTML = $template;
@@ -49,7 +50,7 @@ const findGoogleAddress = (win, doc) => {
         script.onerror = (err) => {
           displayLoading(true, 'Erro ao carregar Google Maps')($loading);
         };
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places`;
+        script.src = `https://maps.googleapis.com/maps/api/js?${config.apiKey}&libraries=places`;
         doc.getElementsByTagName('head')[0].appendChild(script);
       } else if (!isMapsInitialized) {
         creatGoogleMaps();
@@ -57,14 +58,16 @@ const findGoogleAddress = (win, doc) => {
         initializeValues(gmapsInstance, initialValues)($form);
       }
 
-      const setFormPristine = (fields) => {
-        Object.keys(fields).forEach((name) => {
-          const field = fields[name];
-          if (field) {
-            field.touched = false;
-          }
-        });
-      }
+      // const setFormUntouched = (fields) => {
+      //   Object.keys(fields).forEach((name) => {
+      //     const field = fields[name];
+      //     if (field) {
+      //       field.touched = false;
+      //     }
+      //   });
+
+      //   return fields;
+      // }
 
       const handleGeocodePosition = (responses, pos) => {
         if (responses && responses.length > 0) {
@@ -76,7 +79,7 @@ const findGoogleAddress = (win, doc) => {
           resetFormFields($form);
           updateForm(address)($form);
           enableFields(address)($form);
-          setFormPristine(formFields);
+          setFormUntouched(formFieldsResult);
         }
       };
 
@@ -103,18 +106,18 @@ const findGoogleAddress = (win, doc) => {
           const values = getFormValues($form);
 
           Object.keys(values).forEach((name) => {
-            if (!formFields[name]) {
-              formFields[name] = {
+            if (!formFieldsResult[name]) {
+              formFieldsResult[name] = {
                 value: values[name],
                 touched: false
               };
             } else {
-              formFields[name].value = values[name];
+              formFieldsResult[name].value = values[name];
             }
           });
 
           if (callback) {
-            callback(formFields, values);
+            callback(formFieldsResult, values);
           }
 
           resetFormFields($form);
@@ -133,7 +136,7 @@ const findGoogleAddress = (win, doc) => {
 
           updateForm(address)($form);
           enableFields(address)($form);
-          setFormPristine(formFields);
+          setFormUntouched(formFieldsResult);
         }
       };
 
@@ -177,7 +180,7 @@ const findGoogleAddress = (win, doc) => {
         $form.addEventListener('change', (event) => {
           FORM_FIELDS_SCHEMA[event.target.name].onChange(event);
 
-          formFields[event.target.name] = {
+          formFieldsResult[event.target.name] = {
             value: event.target.value,
             touched: true
           };

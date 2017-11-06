@@ -1,38 +1,39 @@
 import '../styles/demo.scss';
 import { syntaxHighlight } from '../utils';
 
-const API_KEY = 'AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8';
+const API_KEY = 'key=AIzaSyDkNOmrr3Ec_sbxVZLY5xfP3hfNqLRKoG8';
 const $exampleForm = document.getElementById('exampleForm');
 const $submitResultsLeft = document.getElementById('submitResultsLeft');
 const $submitResultsRight = document.getElementById('submitResultsRight');
 const $newAddressBtn = document.getElementById('addNewAddress');
 const initialData = {
-  rua: 'Rua Mário Carnicelli',
-  pais: 'Brasil',
-  estado: 'São Paulo',
-  cidade: 'Campinas',
+  street: 'Rua Mário Carnicelli',
+  country: 'Brasil',
+  state: 'São Paulo',
+  city: 'Campinas',
   // lat: -22.843125677855074,
   // lng: -47.00317025184631
 };
 
 const init = () => {
-  applyValuesValues(initialData);
+  applyValuesValues(mapFormValuesToApiProps(initialData, true));
 
   const $appContainer = document.querySelector('[data-gmaps="find-google-address"]');
   const data = getFormValues();
   const formatted = mapFormValuesToApiProps(data);
 
-  findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (touched, values) => {
-    applyValuesValues(mapFormValuesToApiProps(values, true));
-
-    $submitResultsLeft.innerHTML = '<pre><strong>Maps API values</strong>\n' + syntaxHighlight(values) + '</pre>';
-  })($appContainer);
+  findGoogleAddress(
+    { apiKey: API_KEY, initialValues: formatted },
+    (touched, values) => {
+      applyValuesValues(mapFormValuesToApiProps(values, true));
+      $submitResultsLeft.innerHTML = '<pre><strong>Maps API values</strong>\n' + syntaxHighlight(values) + '</pre>';
+    })($appContainer);
 
   $newAddressBtn.addEventListener('click', () => {
     const data = getFormValues();
     const formatted = mapFormValuesToApiProps(data);
 
-    findGoogleAddress({apiKey: API_KEY, initialValues: formatted}, (touched, values) => {
+    findGoogleAddress({ apiKey: API_KEY, initialValues: formatted }, (touched, values) => {
       const formattedResponse = mapFormValuesToApiProps(values, true);
 
       applyValuesValues(formattedResponse);
@@ -41,7 +42,6 @@ const init = () => {
 
   $exampleForm.addEventListener('submit', (e) => {
     e.preventDefault();
-
     const values = getFormValues();
 
     $submitResultsRight.innerHTML = '<pre><strong>Submit Values</strong>\n' + syntaxHighlight(values) + '</pre>';
